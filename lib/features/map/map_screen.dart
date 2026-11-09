@@ -402,6 +402,13 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                     if (widget.user.role.canDriveRoute)
                       const _EstadoTransmision(),
+                    if (widget.user.role.canDriveRoute &&
+                        activos.any(
+                          (e) =>
+                              e.estado == EstadoEnvio.enTransito &&
+                              e.llegadaEn == null,
+                        ))
+                      const _AvisoSegundoPlano(),
                   ],
                 ),
               ),
@@ -649,6 +656,92 @@ class _EstadoTransmision extends StatelessWidget {
                 : rastreo.reanudarTransmision,
           );
         },
+      ),
+    );
+  }
+}
+
+/// Durante un envío en tránsito, invita a seguir registrando el recorrido con
+/// la pantalla bloqueada. Explica antes de pedir el permiso de Android.
+class _AvisoSegundoPlano extends StatelessWidget {
+  const _AvisoSegundoPlano();
+
+  Future<void> _activar(BuildContext context) async {
+    final aceptar = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(
+          S.text(
+            'fondo.titulo',
+            'Registrar el recorrido con la pantalla bloqueada',
+            'Record the route with the screen locked',
+          ),
+        ),
+        content: Text(
+          S.text(
+            'fondo.explicacion',
+            'Mientras tengas un envío en camino, PAEGo seguirá enviando tu '
+                'ubicación aunque bloquees el teléfono o uses otra app, y lo '
+                'indicará con una notificación. En la siguiente pantalla elige '
+                '"Permitir todo el tiempo". Se detiene al cerrar sesión.',
+            'While a delivery is on its way, PAEGo will keep sending your '
+                'location even if you lock the phone or use another app, and '
+                'will show a notification. On the next screen choose "Allow '
+                'all the time". It stops when you log out.',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(S.text('fondo.ahora_no', 'Ahora no', 'Not now')),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(S.text('fondo.continuar', 'Continuar', 'Continue')),
+          ),
+        ],
+      ),
+    );
+    if (aceptar != true) return;
+    final ok = await RastreoService.instance.activarSegundoPlano();
+    if (ok || !context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          S.text(
+            'fondo.negado',
+            'Sin el permiso "Permitir todo el tiempo" el recorrido solo se '
+                'registra con la app abierta. Puedes darlo en Ajustes > '
+                'Aplicaciones > PAEGo > Ubicación.',
+            'Without "Allow all the time" the route is only recorded while '
+                'the app is open. You can grant it in Settings > Apps > PAEGo '
+                '> Location.',
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rastreo = RastreoService.instance;
+    if (!rastreo.soportaSegundoPlano) return const SizedBox.shrink();
+    return ValueListenableBuilder<bool>(
+      valueListenable: rastreo.segundoPlano,
+      builder: (context, activo, _) => ValueListenableBuilder<LatLng?>(
+        valueListenable: rastreo.posicion,
+        builder: (context, posicion, _) => activo || posicion == null
+            ? const SizedBox.shrink()
+            : _Banner(
+                icono: Icons.lock_clock_rounded,
+                texto: S.text(
+                  'fondo.aviso',
+                  'Con la pantalla bloqueada se deja de registrar el recorrido',
+                  'The route stops recording when the screen is locked',
+                ),
+                accion: S.text('fondo.activar', 'Activar', 'Enable'),
+                onAccion: () => _activar(context),
+              ),
       ),
     );
   }

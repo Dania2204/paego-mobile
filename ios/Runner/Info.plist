@@ -29,7 +29,11 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>PAEGo usa tu ubicacion para mostrarte en el mapa y registrar rutas de entrega.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>PAEGo usa tu ubicacion para mantener actualizadas las rutas de entrega mientras usas la app.</string>
+	<string>PAEGo usa tu ubicacion para seguir registrando el recorrido del envío con la pantalla bloqueada.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>location</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

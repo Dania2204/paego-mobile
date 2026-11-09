@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -18,6 +19,13 @@ class _GpsFalso extends Fake implements Location {
 
   /// Lo que responde el conductor si se le pide el permiso.
   PermissionStatus respuestaPermiso = PermissionStatus.denied;
+
+  /// Segundo plano: si concede "Permitir todo el tiempo" y llamadas recibidas.
+  bool permiteSegundoPlano = true;
+  bool enSegundoPlano = false;
+  final llamadasSegundoPlano = <bool>[];
+  int dialogosSiempre = 0;
+  String? iconoNotificacion;
   final _posiciones = StreamController<LocationData>.broadcast();
 
   static LocationData punto(double lat, double lng) =>
@@ -54,6 +62,31 @@ class _GpsFalso extends Fake implements Location {
   }) async => true;
 
   @override
+  Future<bool> enableBackgroundMode({bool? enable = true}) async {
+    llamadasSegundoPlano.add(enable ?? true);
+    if (enable == true && !permiteSegundoPlano) {
+      throw PlatformException(code: 'PERMISSION_DENIED');
+    }
+    return enSegundoPlano = enable ?? true;
+  }
+
+  @override
+  // AndroidNotificationData no se exporta desde package:location.
+  // ignore: prefer_void_to_null
+  Future<Null> changeNotificationOptions({
+    String? channelName,
+    String? title,
+    String? iconName,
+    String? subtitle,
+    String? description,
+    Color? color,
+    bool? onTapBringToFront,
+  }) async {
+    iconoNotificacion = iconName;
+    return null;
+  }
+
+  @override
   Future<LocationData> getLocation() async => punto(1.2136, -77.2811);
 
   @override
@@ -75,6 +108,11 @@ void main() {
     gps = _GpsFalso();
     rutas = [];
     rastreo
+      ..soportaSegundoPlano = true
+      ..pedirPermisoSiempre = () async {
+        gps.dialogosSiempre++;
+        return gps.permiteSegundoPlano;
+      }
       ..usarLocation(gps)
       ..intervaloReintento = const Duration(milliseconds: 20);
     rastreo.posicion.value = null;
@@ -186,5 +224,59 @@ void main() {
     await esperar(() => rastreo.escuchando);
     expect(rastreo.escuchando, isTrue);
     expect(rastreo.transmitiendo.value, isTrue);
+  });
+
+  group('segundo plano', () {
+    Future<void> conductorConGps() async {
+      gps.encendido = true;
+      await rastreo.iniciar(esConductor: true);
+      await esperar(() => rutas.contains('/api/monitoreo/mi-posicion/'));
+    }
+
+    test('no se activa solo la primera vez', () async {
+      await conductorConGps();
+      expect(gps.llamadasSegundoPlano, isEmpty);
+      expect(rastreo.segundoPlano.value, isFalse);
+    });
+
+    test(
+      'el conductor lo activa y queda recordado para la próxima sesión',
+      () async {
+        await conductorConGps();
+        expect(await rastreo.activarSegundoPlano(), isTrue);
+        expect(rastreo.segundoPlano.value, isTrue);
+        expect(gps.iconoNotificacion, 'ic_stat_paego');
+
+        await rastreo.detener(); // Cerrar sesión apaga el servicio.
+        expect(gps.enSegundoPlano, isFalse);
+        expect(rastreo.segundoPlano.value, isFalse);
+
+        gps.llamadasSegundoPlano.clear();
+        await conductorConGps(); // Nueva sesión: se reactiva sin preguntar.
+        expect(gps.llamadasSegundoPlano, [true]);
+        expect(rastreo.segundoPlano.value, isTrue);
+      },
+    );
+
+    test('si niega el permiso el rastreo sigue con la app abierta', () async {
+      gps.permiteSegundoPlano = false;
+      await conductorConGps();
+      expect(await rastreo.activarSegundoPlano(), isFalse);
+      expect(gps.dialogosSiempre, 1);
+      expect(gps.llamadasSegundoPlano, isEmpty);
+      expect(rastreo.segundoPlano.value, isFalse);
+      expect(rastreo.escuchando, isTrue);
+      final prefs = await SharedPreferences.getInstance();
+      expect(prefs.getBool('paego_segundo_plano'), isNull);
+    });
+
+    test('la institución no usa el segundo plano', () async {
+      gps.encendido = true;
+      await rastreo.iniciar(esConductor: false);
+      await esperar(() => rastreo.escuchando);
+      expect(await rastreo.activarSegundoPlano(), isFalse);
+      expect(gps.llamadasSegundoPlano, isEmpty);
+      expect(gps.dialogosSiempre, 0);
+    });
   });
 }

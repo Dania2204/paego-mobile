@@ -55,7 +55,14 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
 - `services/rastreo_service.dart`: GPS (`location`). Conductor: posición en vivo cada 3 s a
   `POST /api/monitoreo/mi-posicion/` (efímera, la ve el admin en "Hoy" de la web) + punto del
   recorrido (RF-21) cada `intervalo_ubicacion_seg` del servidor para envíos en tránsito (encolado).
-  Solo con la app abierta (no hay modo segundo plano). Si el GPS está apagado o sin permiso al
+  **Segundo plano** (conductor, durante un envío en tránsito): el mapa muestra un aviso → diálogo
+  explicativo → `permission_handler` pide "Permitir todo el tiempo" *solo* (Android 11+ ignora la
+  petición combinada que hace el plugin `location`) → `enableBackgroundMode` arranca el servicio en
+  primer plano con notificación (`res/drawable/ic_stat_paego.xml`, protegido en `res/raw/keep.xml`).
+  Se recuerda en `paego_segundo_plano` y se reactiva solo en cada sesión; `detener()` lo apaga.
+  `permission_handler` fijado en ^12 (la 13 no compila con el Gradle del proyecto). En iOS, al
+  generar el `Podfile`, definir `PERMISSION_LOCATION=1` y `PERMISSION_NOTIFICATIONS=1`.
+  Si el GPS está apagado o sin permiso al
   iniciar, revisa cada 5 s y arranca solo (no repite "activar GPS"; el permiso lo pide una sola vez si nunca se pidió); `test/rastreo_test.dart` usa un
   `Location` falso (`usarLocation`).
 - Modelos: `models/envio.dart` envuelve el JSON del `EnvioSerializer` (estados

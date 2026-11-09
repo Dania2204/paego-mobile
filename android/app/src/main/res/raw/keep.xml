@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- El plugin location busca el ícono de la notificación por nombre
+     (getIdentifier): evita que la reducción de recursos del release lo borre. -->
+<resources xmlns:tools="http://schemas.android.com/tools"
+    tools:keep="@drawable/ic_stat_paego" />

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:location/location.dart';
+import 'package:permission_handler/permission_handler.dart' as ph;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/config/api_config.dart';
 import '../models/envio.dart';
@@ -18,6 +20,10 @@ import '../repositories/envio_repository.dart';
 /// 2. Si tiene un envío en tránsito, cada `intervalo_ubicacion_seg` (lo define
 ///    el servidor) guarda un punto del recorrido (RF-21) en la cola sin
 ///    conexión, así la ruta queda completa aunque se pierda la señal.
+/// 3. Con el modo en segundo plano (Android: servicio en primer plano con
+///    notificación, permiso "Permitir todo el tiempo") sigue rastreando con la
+///    pantalla bloqueada o en otra app. Lo activa el conductor una vez desde el
+///    mapa; después se reactiva solo en cada sesión.
 class RastreoService {
   RastreoService._();
   static final instance = RastreoService._();
@@ -43,6 +49,29 @@ class RastreoService {
 
   /// Hora del último envío exitoso de la posición en vivo.
   final ultimoEnvio = ValueNotifier<DateTime?>(null);
+
+  /// El rastreo sigue con la pantalla bloqueada (modo en segundo plano).
+  final segundoPlano = ValueNotifier<bool>(false);
+
+  /// El conductor ya aceptó el modo en segundo plano alguna vez.
+  static const _kSegundoPlano = 'paego_segundo_plano';
+
+  /// En web no hay servicio en segundo plano.
+  bool get soportaSegundoPlano => _soportaSegundoPlano;
+  bool _soportaSegundoPlano = !kIsWeb;
+  @visibleForTesting
+  set soportaSegundoPlano(bool valor) => _soportaSegundoPlano = valor;
+
+  /// Pide "Permitir todo el tiempo". Android 11+ exige pedirlo solo, después
+  /// del permiso normal (el plugin location los pide juntos y el sistema lo
+  /// ignora); en Android abre los ajustes de ubicación de la app.
+  @visibleForTesting
+  Future<bool> Function() pedirPermisoSiempre = () async {
+    final estado = await ph.Permission.locationAlways.request();
+    // Android 13+: sin este permiso la notificación del servicio no se ve.
+    await ph.Permission.notification.request();
+    return estado.isGranted;
+  };
 
   LocationData? _ultimo;
   StreamSubscription<LocationData>? _sub;
@@ -134,6 +163,10 @@ class RastreoService {
     );
 
     if (!_esConductor) return;
+    if (await _aceptoSegundoPlano() && gen == _generacion) {
+      await _activarSegundoPlano(); // Permiso ya concedido: no muestra diálogos.
+    }
+    if (gen != _generacion) return;
     await _cargarConfiguracion();
     if (gen != _generacion) return;
     _timerVivo = Timer.periodic(
@@ -157,6 +190,12 @@ class RastreoService {
     _timerReintento = null;
     await _sub?.cancel();
     _sub = null;
+    if (segundoPlano.value) {
+      segundoPlano.value = false;
+      try {
+        await _location.enableBackgroundMode(enable: false);
+      } catch (_) {}
+    }
     transmitiendo.value = false;
     _esConductor = false;
   }
@@ -172,6 +211,47 @@ class RastreoService {
       return;
     }
     unawaited(_enviarEnVivo());
+  }
+
+  /// El conductor pide seguir rastreando con la pantalla bloqueada (botón del
+  /// mapa). Android muestra el permiso "Permitir todo el tiempo".
+  Future<bool> activarSegundoPlano() async {
+    if (!_esConductor || !escuchando || !soportaSegundoPlano) return false;
+    try {
+      if (!await pedirPermisoSiempre()) return false;
+    } catch (_) {
+      return false;
+    }
+    final ok = await _activarSegundoPlano();
+    if (ok) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_kSegundoPlano, true);
+    }
+    return ok;
+  }
+
+  Future<bool> _aceptoSegundoPlano() async {
+    if (!soportaSegundoPlano) return false;
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_kSegundoPlano) ?? false;
+  }
+
+  Future<bool> _activarSegundoPlano() async {
+    if (!soportaSegundoPlano) return false;
+    try {
+      await _location.changeNotificationOptions(
+        channelName: 'Rastreo del recorrido',
+        title: 'PAEGo está compartiendo tu ubicación',
+        subtitle: 'El recorrido del envío sigue registrándose.',
+        iconName: 'ic_stat_paego',
+        onTapBringToFront: true,
+      );
+      segundoPlano.value = await _location.enableBackgroundMode(enable: true);
+    } catch (_) {
+      // Permiso negado: el rastreo sigue, pero solo con la app abierta.
+      segundoPlano.value = false;
+    }
+    return segundoPlano.value;
   }
 
   /// Vuelve a pedir los permisos (botón "Reintentar" en la UI).
