@@ -56,7 +56,7 @@ class EnvioTile extends StatelessWidget {
           color: isDark ? PaeColors.cardDark : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.08) : PaeColors.divider,
+            color: isDark ? Colors.white.withValues(alpha: 0.08) : PaeColors.divider,
           ),
         ),
         child: Row(
@@ -65,7 +65,7 @@ class EnvioTile extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: envio.estado.color.withOpacity(0.12),
+                color: envio.estado.color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -309,9 +309,9 @@ class CodigoVerificacion extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: PaeColors.primary.withOpacity(0.08),
+        color: PaeColors.primary.withValues(alpha: 0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: PaeColors.primary.withOpacity(0.3)),
+        border: Border.all(color: PaeColors.primary.withValues(alpha: 0.3)),
       ),
       child: Column(
         children: [
@@ -350,8 +350,9 @@ List<Widget> accionesEnvio(
   bool cerrarAlTerminar = false,
 }) {
   void cerrar() {
-    if (cerrarAlTerminar && Navigator.of(context).canPop())
+    if (cerrarAlTerminar && Navigator.of(context).canPop()) {
       Navigator.of(context).pop();
+    }
   }
 
   final botones = <Widget>[];
@@ -734,7 +735,7 @@ class _NovedadSheetState extends State<_NovedadSheet> {
               ),
               const SizedBox(height: 16),
               DropdownButtonFormField<TipoNovedad>(
-                value: _tipo,
+                initialValue: _tipo,
                 decoration: InputDecoration(
                   labelText: S.text('novedad.tipo', 'Tipo', 'Type'),
                 ),
@@ -994,7 +995,7 @@ class _ConfirmarRecepcionSheetState extends State<_ConfirmarRecepcionSheet> {
                   ),
                 ),
               DropdownButtonFormField<TipoNovedad>(
-                value: _tipoNovedad,
+                initialValue: _tipoNovedad,
                 decoration: InputDecoration(
                   labelText: S.text(
                     'recepcion.tipo_novedad',

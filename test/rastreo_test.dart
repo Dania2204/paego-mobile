@@ -40,8 +40,9 @@ class _GpsFalso extends Fake implements Location {
   @override
   Future<PermissionStatus> requestPermission() async {
     dialogosPermiso++;
-    if (respuestaPermiso == PermissionStatus.granted)
+    if (respuestaPermiso == PermissionStatus.granted) {
       permiso = respuestaPermiso;
+    }
     return permiso;
   }
 

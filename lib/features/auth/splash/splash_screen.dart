@@ -70,10 +70,10 @@ class _SplashScreenState extends State<SplashScreen>
                     width: 96,
                     height: 96,
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.15),
+                      color: Colors.white.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: Colors.white.withOpacity(0.4), width: 2),
+                          color: Colors.white.withValues(alpha: 0.4), width: 2),
                     ),
                     child: const Icon(Icons.local_shipping_rounded,
                         size: 48, color: Colors.white),
@@ -93,7 +93,7 @@ class _SplashScreenState extends State<SplashScreen>
                         fontFamily: PaeTypography.fontBody,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Colors.white.withOpacity(0.8),
+                        color: Colors.white.withValues(alpha: 0.8),
                         letterSpacing: 0.5,
                       )),
                   const SizedBox(height: 48),
@@ -103,7 +103,7 @@ class _SplashScreenState extends State<SplashScreen>
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.white.withOpacity(0.7)),
+                          Colors.white.withValues(alpha: 0.7)),
                     ),
                   ),
                 ],

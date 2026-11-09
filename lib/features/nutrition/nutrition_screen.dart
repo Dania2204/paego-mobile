@@ -149,8 +149,7 @@ class _NutritionScreenState extends State<NutritionScreen>
     // Build context summary of today's food
     final foodContext = _entries.isEmpty
         ? 'No hay alimentos registrados hoy.'
-        : 'Alimentos registrados hoy:\n' +
-              _entries
+        : 'Alimentos registrados hoy:\n${_entries
                   .map(
                     (e) =>
                         '- ${e.name} (${e.portion}) — ${e.calories.toStringAsFixed(0)} kcal, '
@@ -158,11 +157,7 @@ class _NutritionScreenState extends State<NutritionScreen>
                         '${e.carbs.toStringAsFixed(1)}g carbohidratos, '
                         '${e.fat.toStringAsFixed(1)}g grasa [${e.mealType.label}]',
                   )
-                  .join('\n') +
-              '\n\nTotales del día: ${_totalCalories.toStringAsFixed(0)} kcal | '
-                  '${_totalProtein.toStringAsFixed(1)}g proteína | '
-                  '${_totalCarbs.toStringAsFixed(1)}g carbohidratos | '
-                  '${_totalFat.toStringAsFixed(1)}g grasa';
+                  .join('\n')}\n\nTotales del día: ${_totalCalories.toStringAsFixed(0)} kcal | ${_totalProtein.toStringAsFixed(1)}g proteína | ${_totalCarbs.toStringAsFixed(1)}g carbohidratos | ${_totalFat.toStringAsFixed(1)}g grasa';
 
     final systemPrompt =
         '''
@@ -434,7 +429,7 @@ $foodContext
                     Container(
                       padding: const EdgeInsets.all(24),
                       decoration: BoxDecoration(
-                        color: PaeColors.primary.withOpacity(0.08),
+                        color: PaeColors.primary.withValues(alpha: 0.08),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -489,7 +484,7 @@ $foodContext
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: meal.color.withOpacity(0.12),
+                  color: meal.color.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(meal.icon, color: meal.color, size: 18),
@@ -623,7 +618,7 @@ class _SummaryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: PaeColors.primary.withOpacity(0.3),
+            color: PaeColors.primary.withValues(alpha: 0.3),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),
@@ -647,7 +642,7 @@ class _SummaryCard extends StatelessWidget {
               Text(
                 '${calories.toStringAsFixed(0)} / ${goal.toStringAsFixed(0)} kcal',
                 style: TextStyle(
-                  color: Colors.white.withOpacity(0.85),
+                  color: Colors.white.withValues(alpha: 0.85),
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
                 ),
@@ -659,7 +654,7 @@ class _SummaryCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             child: LinearProgressIndicator(
               value: progress,
-              backgroundColor: Colors.white.withOpacity(0.25),
+              backgroundColor: Colors.white.withValues(alpha: 0.25),
               valueColor: const AlwaysStoppedAnimation<Color>(Colors.white),
               minHeight: 8,
             ),
@@ -723,7 +718,7 @@ class _MacroChip extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           label,
-          style: TextStyle(color: Colors.white.withOpacity(0.8), fontSize: 11),
+          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 11),
         ),
       ],
     );
@@ -744,7 +739,7 @@ class _FoodEntryTile extends StatelessWidget {
     final surface = Theme.of(context).colorScheme.surface;
     final textPrimary = isDark ? Colors.white : PaeColors.textPrimary;
     final textSecondary = isDark
-        ? Colors.white.withOpacity(0.65)
+        ? Colors.white.withValues(alpha: 0.65)
         : PaeColors.textSecondary;
 
     return Dismissible(
@@ -764,11 +759,11 @@ class _FoodEntryTile extends StatelessWidget {
           color: surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.08) : PaeColors.divider,
+            color: isDark ? Colors.white.withValues(alpha: 0.08) : PaeColors.divider,
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -779,7 +774,7 @@ class _FoodEntryTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: entry.mealType.color.withOpacity(0.1),
+                color: entry.mealType.color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Icon(
@@ -905,7 +900,7 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: PaeColors.primary.withOpacity(0.1),
+                    color: PaeColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
@@ -948,7 +943,7 @@ class _AddFoodSheetState extends State<_AddFoodSheet> {
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       decoration: BoxDecoration(
                         color: selected
-                            ? m.color.withOpacity(0.15)
+                            ? m.color.withValues(alpha: 0.15)
                             : Colors.grey.shade100,
                         borderRadius: BorderRadius.circular(10),
                         border: Border.all(
@@ -1132,9 +1127,9 @@ class _QuickChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: PaeColors.primary.withOpacity(0.08),
+          color: PaeColors.primary.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: PaeColors.primary.withOpacity(0.3)),
+          border: Border.all(color: PaeColors.primary.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1195,7 +1190,7 @@ class _ChatBubble extends StatelessWidget {
           color: isUser
               ? PaeColors.primary
               : message.isError
-              ? PaeColors.error.withOpacity(0.1)
+              ? PaeColors.error.withValues(alpha: 0.1)
               : surface,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(18),
@@ -1209,7 +1204,7 @@ class _ChatBubble extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -1260,7 +1255,7 @@ class _TypingIndicator extends StatelessWidget {
           borderRadius: BorderRadius.circular(18),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.06),
+              color: Colors.black.withValues(alpha: 0.06),
               blurRadius: 8,
               offset: const Offset(0, 2),
             ),
@@ -1315,7 +1310,7 @@ class _AiInput extends StatelessWidget {
         color: surface,
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 12,
             offset: const Offset(0, -2),
           ),
@@ -1331,7 +1326,7 @@ class _AiInput extends StatelessWidget {
                 hintText: 'Pregunta sobre nutrición…',
                 hintStyle: TextStyle(
                   color: isDark
-                      ? Colors.white.withOpacity(0.6)
+                      ? Colors.white.withValues(alpha: 0.6)
                       : PaeColors.textSecondary,
                   fontSize: 13,
                 ),
@@ -1358,7 +1353,7 @@ class _AiInput extends StatelessWidget {
                     width: 44,
                     height: 44,
                     decoration: BoxDecoration(
-                      color: PaeColors.primary.withOpacity(0.15),
+                      color: PaeColors.primary.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                     ),
                     child: const Padding(

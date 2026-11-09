@@ -87,7 +87,7 @@ class _LoginScreenState extends State<LoginScreen>
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: const Icon(Icons.local_shipping_rounded,
@@ -105,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen>
                       Text(S.appTagline,
                           style: TextStyle(
                             fontFamily: PaeTypography.fontBody,
-                            color: Colors.white.withOpacity(0.8),
+                            color: Colors.white.withValues(alpha: 0.8),
                             fontSize: 14,
                             fontWeight: FontWeight.w500,
                           )),
@@ -135,7 +135,7 @@ class _LoginScreenState extends State<LoginScreen>
                       borderRadius: BorderRadius.circular(28),
                       boxShadow: [
                         BoxShadow(
-                          color: PaeColors.primary.withOpacity(0.12),
+                          color: PaeColors.primary.withValues(alpha: 0.12),
                           blurRadius: 32,
                           offset: const Offset(0, 8),
                         ),
@@ -201,7 +201,7 @@ class _LoginScreenState extends State<LoginScreen>
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 14, vertical: 10),
                               decoration: BoxDecoration(
-                                color: PaeColors.error.withOpacity(0.08),
+                                color: PaeColors.error.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(

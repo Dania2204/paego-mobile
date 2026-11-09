@@ -161,7 +161,7 @@ class _HomeShellState extends State<HomeShell> {
           color: Theme.of(context).colorScheme.surface,
           boxShadow: [
             BoxShadow(
-              color: PaeColors.primary.withOpacity(0.08),
+              color: PaeColors.primary.withValues(alpha: 0.08),
               blurRadius: 20,
               offset: const Offset(0, -4),
             ),

@@ -30,7 +30,7 @@ class RegisterScreen extends StatelessWidget {
                     border: Border.all(color: PaeColors.divider),
                     boxShadow: [
                       BoxShadow(
-                        color: PaeColors.primary.withOpacity(0.08),
+                        color: PaeColors.primary.withValues(alpha: 0.08),
                         blurRadius: 20,
                         offset: const Offset(0, 6),
                       ),
@@ -43,7 +43,7 @@ class RegisterScreen extends StatelessWidget {
                         width: 72,
                         height: 72,
                         decoration: BoxDecoration(
-                          color: PaeColors.warning.withOpacity(0.12),
+                          color: PaeColors.warning.withValues(alpha: 0.12),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(

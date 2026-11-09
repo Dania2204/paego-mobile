@@ -58,7 +58,7 @@ class GradientHeader extends StatelessWidget implements PreferredSizeWidget {
                       Text(
                         subtitle!,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 12,
                           fontWeight: FontWeight.w500,
                           fontFamily: PaeTypography.fontBody,
@@ -133,9 +133,9 @@ class StatusBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.12),
+        color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withOpacity(0.5)),
+        border: Border.all(color: color.withValues(alpha: 0.5)),
       ),
       child: Text(
         label,
@@ -172,7 +172,7 @@ class SectionHeader extends StatelessWidget {
               color: isDark ? Colors.white : PaeColors.textPrimary,
             ),
           ),
-          if (trailing != null) trailing!,
+          ?trailing,
         ],
       ),
     );
@@ -201,7 +201,7 @@ class StatCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final surface = Theme.of(context).colorScheme.surface;
     final textSecondary = isDark
-        ? Colors.white.withOpacity(0.65)
+        ? Colors.white.withValues(alpha: 0.65)
         : PaeColors.textSecondary;
 
     return GestureDetector(
@@ -212,11 +212,11 @@ class StatCard extends StatelessWidget {
           color: surface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isDark ? Colors.white.withOpacity(0.08) : PaeColors.divider,
+            color: isDark ? Colors.white.withValues(alpha: 0.08) : PaeColors.divider,
           ),
           boxShadow: [
             BoxShadow(
-              color: PaeColors.primary.withOpacity(0.06),
+              color: PaeColors.primary.withValues(alpha: 0.06),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),
@@ -229,7 +229,7 @@ class StatCard extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 20),
@@ -303,7 +303,7 @@ class GradientButton extends StatelessWidget {
           boxShadow: onPressed != null
               ? [
                   BoxShadow(
-                    color: PaeColors.primary.withOpacity(0.35),
+                    color: PaeColors.primary.withValues(alpha: 0.35),
                     blurRadius: 16,
                     offset: const Offset(0, 6),
                   ),

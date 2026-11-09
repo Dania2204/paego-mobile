@@ -227,7 +227,7 @@ class _UserCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final cardColor = isDark ? PaeColors.cardDark : Colors.white;
     final borderColor = isDark
-        ? Colors.white.withOpacity(0.08)
+        ? Colors.white.withValues(alpha: 0.08)
         : PaeColors.divider;
 
     return Container(
@@ -239,7 +239,7 @@ class _UserCard extends StatelessWidget {
         border: Border.all(color: borderColor),
         boxShadow: [
           BoxShadow(
-            color: PaeColors.primary.withOpacity(0.04),
+            color: PaeColors.primary.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -455,7 +455,7 @@ class _CreateUserSheetState extends State<_CreateUserSheet> {
               ),
               SizedBox(height: 14),
               DropdownButtonFormField<UserRole>(
-                value: _selectedRole,
+                initialValue: _selectedRole,
                 decoration: InputDecoration(
                   labelText: S.registerRole,
                   prefixIcon: Icon(Icons.admin_panel_settings_outlined),
@@ -534,7 +534,7 @@ class _CreateUserSheetState extends State<_CreateUserSheet> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: PaeColors.error.withOpacity(0.08),
+                    color: PaeColors.error.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(

@@ -38,18 +38,18 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final cardColor = isDark ? PaeColors.cardDark : Colors.white;
     final textPrimary = isDark ? Colors.white : PaeColors.textPrimary;
     final textSecondary = isDark
-        ? Colors.white.withOpacity(0.55)
+        ? Colors.white.withValues(alpha: 0.55)
         : PaeColors.textSecondary;
     final dividerColor = isDark
-        ? Colors.white.withOpacity(0.08)
+        ? Colors.white.withValues(alpha: 0.08)
         : PaeColors.divider;
     final tileColor = isDark ? PaeColors.cardDark : Colors.white;
     final tileBorder = isDark
-        ? Colors.white.withOpacity(0.08)
+        ? Colors.white.withValues(alpha: 0.08)
         : PaeColors.divider;
     final iconBg = isDark
-        ? PaeColors.primaryLight.withOpacity(0.15)
-        : PaeColors.primary.withOpacity(0.08);
+        ? PaeColors.primaryLight.withValues(alpha: 0.15)
+        : PaeColors.primary.withValues(alpha: 0.08);
     final iconColor = isDark ? PaeColors.accent : PaeColors.primary;
 
     return Scaffold(
@@ -72,7 +72,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             initials: widget.user.initials,
                             photoPath: widget.user.photoPath,
                             radius: 44,
-                            backgroundColor: Colors.white.withOpacity(0.25),
+                            backgroundColor: Colors.white.withValues(alpha: 0.25),
                           ),
                           Positioned(
                             bottom: 0,
@@ -106,7 +106,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       Text(
                         widget.user.email,
                         style: TextStyle(
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 13,
                         ),
                       ),
@@ -117,7 +117,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.18),
+                          color: Colors.white.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Row(
@@ -158,13 +158,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   color: cardColor,
                   borderRadius: BorderRadius.circular(24),
                   border: isDark
-                      ? Border.all(color: Colors.white.withOpacity(0.08))
+                      ? Border.all(color: Colors.white.withValues(alpha: 0.08))
                       : null,
                   boxShadow: isDark
                       ? null
                       : [
                           BoxShadow(
-                            color: PaeColors.primary.withOpacity(0.08),
+                            color: PaeColors.primary.withValues(alpha: 0.08),
                             blurRadius: 20,
                             offset: const Offset(0, 4),
                           ),
@@ -248,7 +248,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         widget.onToggleTheme();
                         setState(() {});
                       },
-                      activeColor: PaeColors.primary,
+                      activeThumbColor: PaeColors.primary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -274,10 +274,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: PaeColors.primary.withOpacity(0.12),
+                          color: PaeColors.primary.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: PaeColors.primary.withOpacity(0.3),
+                            color: PaeColors.primary.withValues(alpha: 0.3),
                           ),
                         ),
                         child: Row(
@@ -357,12 +357,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: PaeColors.error.withOpacity(
+                        color: PaeColors.error.withValues(alpha: 
                           isDark ? 0.15 : 0.07,
                         ),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(
-                          color: PaeColors.error.withOpacity(0.3),
+                          color: PaeColors.error.withValues(alpha: 0.3),
                         ),
                       ),
                       child: Row(

@@ -117,7 +117,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     initials: user.initials,
                                     photoPath: user.photoPath,
                                     radius: 24,
-                                    backgroundColor: Colors.white.withOpacity(
+                                    backgroundColor: Colors.white.withValues(alpha: 
                                       0.25,
                                     ),
                                   ),
@@ -129,7 +129,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       Text(
                                         '$greeting,',
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.8),
+                                          color: Colors.white.withValues(alpha: 0.8),
                                           fontSize: 13,
                                           fontFamily: PaeTypography.fontBody,
                                         ),
@@ -153,7 +153,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.18),
+                                  color: Colors.white.withValues(alpha: 0.18),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Text(
@@ -186,7 +186,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           Text(
                             S.appTagline,
                             style: TextStyle(
-                              color: Colors.white.withOpacity(0.7),
+                              color: Colors.white.withValues(alpha: 0.7),
                               fontSize: 13,
                               fontFamily: PaeTypography.fontBody,
                             ),
@@ -431,9 +431,9 @@ class _QATile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: BoxDecoration(
-          color: qa.color.withOpacity(0.08),
+          color: qa.color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: qa.color.withOpacity(0.2)),
+          border: Border.all(color: qa.color.withValues(alpha: 0.2)),
         ),
         child: Column(
           children: [

@@ -254,7 +254,7 @@ ThemeData buildLightTheme() {
     ),
     chipTheme: ChipThemeData(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      selectedColor: PaeColors.primary.withOpacity(0.15),
+      selectedColor: PaeColors.primary.withValues(alpha: 0.15),
       backgroundColor: PaeColors.bgLight,
       labelStyle: const TextStyle(
         fontFamily: PaeTypography.fontBody,
@@ -343,17 +343,17 @@ ThemeData buildDarkTheme() {
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: PaeColors.primaryLight.withOpacity(0.3)),
+        borderSide: BorderSide(color: PaeColors.primaryLight.withValues(alpha: 0.3)),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: PaeColors.primaryLight.withOpacity(0.3), width: 1.5),
+        borderSide: BorderSide(color: PaeColors.primaryLight.withValues(alpha: 0.3), width: 1.5),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
         borderSide: const BorderSide(color: PaeColors.accent, width: 2),
       ),
-      labelStyle: TextStyle(color: PaeColors.accent.withOpacity(0.8)),
+      labelStyle: TextStyle(color: PaeColors.accent.withValues(alpha: 0.8)),
       prefixIconColor: PaeColors.accent,
     ),
     cardTheme: CardThemeData(
@@ -361,13 +361,13 @@ ThemeData buildDarkTheme() {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(20),
-        side: BorderSide(color: PaeColors.primaryLight.withOpacity(0.2)),
+        side: BorderSide(color: PaeColors.primaryLight.withValues(alpha: 0.2)),
       ),
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: PaeColors.surfaceDark,
       selectedItemColor: PaeColors.accent,
-      unselectedItemColor: PaeColors.textSecondary.withOpacity(0.5),
+      unselectedItemColor: PaeColors.textSecondary.withValues(alpha: 0.5),
       type: BottomNavigationBarType.fixed,
       elevation: 0,
     ),

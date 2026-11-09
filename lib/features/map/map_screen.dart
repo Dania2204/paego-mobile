@@ -679,7 +679,7 @@ class _Banner extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -738,7 +738,7 @@ class _PinInstitucion extends StatelessWidget {
             border: Border.all(color: Colors.white, width: 2),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.4),
+                color: color.withValues(alpha: 0.4),
                 blurRadius: 8,
                 offset: const Offset(0, 3),
               ),
@@ -773,7 +773,7 @@ class _PinVehiculo extends StatelessWidget {
             border: Border.all(color: Colors.white, width: 2),
             boxShadow: [
               BoxShadow(
-                color: PaeColors.primary.withOpacity(0.5),
+                color: PaeColors.primary.withValues(alpha: 0.5),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),
@@ -820,7 +820,7 @@ class _PuntoAzul extends StatelessWidget {
           border: Border.all(color: Colors.white, width: 3),
           boxShadow: [
             BoxShadow(
-              color: PaeColors.secondary.withOpacity(0.4),
+              color: PaeColors.secondary.withValues(alpha: 0.4),
               blurRadius: 10,
             ),
           ],
