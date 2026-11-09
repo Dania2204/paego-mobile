@@ -1,0 +1,101 @@
+# Integración continua de la app móvil PAEGo.
+# Análisis estático, pruebas con cobertura y compilación de web y APK en cada
+# push y pull request.
+name: CI app móvil
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FLUTTER_VERSION: "3.41.4"
+  # URL de la API para los builds de CI (variable del repositorio opcional).
+  PAEGO_API_URL: ${{ vars.PAEGO_API_URL || 'https://web-production-9a3cf.up.railway.app' }}
+
+jobs:
+  calidad:
+    name: Análisis y pruebas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      # .env es un asset declarado en pubspec.yaml: sin él no compila.
+      - name: Crear .env de CI
+        run: echo "PAEGO_API_URL=$PAEGO_API_URL" > .env
+      - run: flutter pub get
+      - name: Análisis estático (errores y warnings bloquean)
+        run: flutter analyze --no-fatal-infos
+      - name: Formato (informativo)
+        continue-on-error: true
+        run: dart format --output=none --set-exit-if-changed lib test
+      - name: Pruebas con cobertura
+        run: flutter test --coverage --reporter expanded
+      - name: Resumen de cobertura
+        if: always()
+        run: |
+          if [ -f coverage/lcov.info ]; then
+            awk -F: '/^LF:/{t+=$2} /^LH:/{c+=$2} END{printf "### Cobertura de pruebas: %d de %d líneas (%.1f %%)\n", c, t, 100*c/t}' coverage/lcov.info >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cobertura-app
+          path: coverage/lcov.info
+          retention-days: 14
+
+  web:
+    name: Build web
+    needs: calidad
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: echo "PAEGO_API_URL=$PAEGO_API_URL" > .env
+      - run: flutter pub get
+      - run: flutter build web --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paego-web
+          path: build/web
+          retention-days: 7
+
+  android:
+    name: Build APK
+    needs: calidad
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: echo "PAEGO_API_URL=$PAEGO_API_URL" > .env
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paego-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 7

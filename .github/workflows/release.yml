@@ -1,0 +1,48 @@
+# Entrega continua: al publicar un tag vX.Y.Z se compila el APK y se adjunta
+# a un GitHub Release, listo para instalar en los teléfonos de prueba.
+#   git tag v1.1.0 && git push origin v1.1.0
+name: Release APK
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: "3.41.4"
+  PAEGO_API_URL: ${{ vars.PAEGO_API_URL || 'https://web-production-9a3cf.up.railway.app' }}
+
+jobs:
+  apk:
+    name: Compilar y publicar APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: echo "PAEGO_API_URL=$PAEGO_API_URL" > .env
+      - run: flutter pub get
+      - name: Pruebas antes de publicar
+        run: flutter test
+      - name: Compilar APK
+        run: |
+          flutter build apk --release
+          cp build/app/outputs/flutter-apk/app-release.apk "paego-${GITHUB_REF_NAME}.apk"
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: paego-${{ github.ref_name }}.apk
+          generate_release_notes: true
+          body: |
+            APK de PAEGo para conductores e instituciones.
+            API configurada: ${{ env.PAEGO_API_URL }}
+            Firmado con la clave de depuración (solo para pruebas, no para Play Store).
