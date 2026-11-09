@@ -55,7 +55,9 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
 - `services/rastreo_service.dart`: GPS (`location`). Conductor: posición en vivo cada 3 s a
   `POST /api/monitoreo/mi-posicion/` (efímera, la ve el admin en "Hoy" de la web) + punto del
   recorrido (RF-21) cada `intervalo_ubicacion_seg` del servidor para envíos en tránsito (encolado).
-  Solo con la app abierta (no hay modo segundo plano).
+  Solo con la app abierta (no hay modo segundo plano). Si el GPS está apagado o sin permiso al
+  iniciar, revisa cada 5 s sin mostrar diálogos y arranca solo; `test/rastreo_test.dart` usa un
+  `Location` falso (`usarLocation`).
 - Modelos: `models/envio.dart` envuelve el JSON del `EnvioSerializer` (estados
   `ASIGNADO|EN_TRANSITO|ENTREGADO|CON_NOVEDAD|CANCELADO`). Roles: `CONDUCTOR→driver`,
   `INSTITUCION→rector`, `ADMINISTRADOR→admin` (`UserRoleX.fromBackend`); los getters de
@@ -92,8 +94,6 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
 
 ## Pendientes conocidos
 
-- `RastreoService`: si el GPS está apagado al iniciar sesión, el rastreo no se reanuda solo al
-  encenderlo (hay que tocar "mi ubicación", que llama a `reintentar()`).
 - `nutrition_screen.dart` lee `dotenv.env['<la clave literal>']` en vez de `dotenv.env['GEMINI_API_KEY']`.
 - `.env.example` contiene claves reales de Supabase y Gemini versionadas en el repo.
 - Las tablas viejas (`users`, `delivery_orders`, `delivery_reports`, `tracking_points`,

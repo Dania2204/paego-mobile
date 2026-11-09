@@ -22,7 +22,15 @@ class RastreoService {
   RastreoService._();
   static final instance = RastreoService._();
 
-  final _location = Location();
+  Location _location = Location();
+
+  /// Cada cuánto se revisa, sin mostrar diálogos, si ya se puede usar el GPS
+  /// cuando al iniciar estaba apagado o sin permiso.
+  @visibleForTesting
+  Duration intervaloReintento = const Duration(seconds: 5);
+
+  @visibleForTesting
+  void usarLocation(Location location) => _location = location;
 
   /// Última posición conocida del teléfono.
   final posicion = ValueNotifier<LatLng?>(null);
@@ -40,17 +48,59 @@ class RastreoService {
   StreamSubscription<LocationData>? _sub;
   Timer? _timerVivo;
   Timer? _timerRecorrido;
+  Timer? _timerReintento;
   bool _esConductor = false;
   bool _enviandoVivo = false;
+  bool _revisando = false;
   Duration _intervaloRecorrido = ApiConfig.intervaloRecorridoPorDefecto;
+
+  /// Cambia en cada iniciar/detener: invalida los arranques que estaban en
+  /// curso (por ejemplo, si se cierra la sesión mientras se espera el GPS).
+  int _generacion = 0;
+
+  /// El GPS está entregando posiciones.
+  bool get escuchando => _sub != null;
 
   /// Pide permisos y empieza a escuchar el GPS. Para conductores, además
   /// transmite la posición en vivo y los puntos del recorrido.
+  ///
+  /// Si el GPS está apagado o falta el permiso, no se rinde: revisa cada
+  /// [intervaloReintento] y arranca solo en cuanto el conductor lo active.
   Future<void> iniciar({required bool esConductor}) async {
     await detener();
+    final gen = ++_generacion;
     _esConductor = esConductor;
-    if (!await _pedirPermisos()) return;
+    if (esConductor) transmitiendo.value = true;
+    if (!await _pedirPermisos(preguntar: true)) {
+      if (gen == _generacion) _esperarGps(gen);
+      return;
+    }
+    if (gen != _generacion) return;
+    await _arrancar(gen);
+  }
 
+  void _esperarGps(int gen) {
+    _timerReintento?.cancel();
+    _timerReintento = Timer.periodic(intervaloReintento, (t) async {
+      if (gen != _generacion) {
+        t.cancel();
+        return;
+      }
+      if (_revisando) return;
+      _revisando = true;
+      try {
+        if (await _pedirPermisos(preguntar: false) && gen == _generacion) {
+          t.cancel();
+          _timerReintento = null;
+          await _arrancar(gen);
+        }
+      } finally {
+        _revisando = false;
+      }
+    });
+  }
+
+  Future<void> _arrancar(int gen) async {
     try {
       await _location.changeSettings(
         accuracy: LocationAccuracy.high,
@@ -66,15 +116,16 @@ class RastreoService {
     } catch (_) {
       problema.value = 'No se pudo leer la ubicación actual.';
     }
+    if (gen != _generacion) return;
     _sub = _location.onLocationChanged.listen(
       _aplicar,
       onError: (_) =>
           problema.value = 'No se puede mantener la ubicación actualizada.',
     );
 
-    if (!esConductor) return;
-    transmitiendo.value = true;
+    if (!_esConductor) return;
     await _cargarConfiguracion();
+    if (gen != _generacion) return;
     _timerVivo = Timer.periodic(
       ApiConfig.intervaloEnVivo,
       (_) => _enviarEnVivo(),
@@ -87,10 +138,13 @@ class RastreoService {
   }
 
   Future<void> detener() async {
+    _generacion++;
     _timerVivo?.cancel();
     _timerRecorrido?.cancel();
+    _timerReintento?.cancel();
     _timerVivo = null;
     _timerRecorrido = null;
+    _timerReintento = null;
     await _sub?.cancel();
     _sub = null;
     transmitiendo.value = false;
@@ -102,22 +156,30 @@ class RastreoService {
   void reanudarTransmision() {
     if (!_esConductor) return;
     transmitiendo.value = true;
+    // Si el GPS nunca arrancó, "Reanudar" vuelve a pedirlo de inmediato.
+    if (!escuchando) {
+      unawaited(reintentar());
+      return;
+    }
     unawaited(_enviarEnVivo());
   }
 
   /// Vuelve a pedir los permisos (botón "Reintentar" en la UI).
   Future<void> reintentar() => iniciar(esConductor: _esConductor);
 
-  Future<bool> _pedirPermisos() async {
+  /// Con [preguntar] muestra los diálogos del sistema (activar GPS, permiso);
+  /// sin él solo consulta el estado, para revisar en segundo plano sin
+  /// interrumpir al conductor.
+  Future<bool> _pedirPermisos({required bool preguntar}) async {
     try {
       var servicio = await _location.serviceEnabled();
-      if (!servicio) servicio = await _location.requestService();
+      if (!servicio && preguntar) servicio = await _location.requestService();
       if (!servicio) {
         problema.value = 'El GPS del teléfono está apagado.';
         return false;
       }
       var permiso = await _location.hasPermission();
-      if (permiso == PermissionStatus.denied) {
+      if (permiso == PermissionStatus.denied && preguntar) {
         permiso = await _location.requestPermission();
       }
       if (permiso != PermissionStatus.granted &&
