@@ -21,6 +21,8 @@ env:
   PAEGO_API_URL: ${{ vars.PAEGO_API_URL || 'https://web-production-9a3cf.up.railway.app' }}
   # Clave de los mapas base de ArcGIS (secreto opcional; sin ella se usa OpenStreetMap).
   ARCGIS_API_KEY: ${{ secrets.ARCGIS_API_KEY }}
+  # Cobertura real de lib/ (con las pantallas). Subirla a medida que se agregan pruebas.
+  COBERTURA_MINIMA: "25"
 
 jobs:
   calidad:
@@ -41,14 +43,23 @@ jobs:
         run: flutter analyze
       - name: Formato
         run: dart format --output=none --set-exit-if-changed lib test
+      # Sin esto la cobertura solo cuenta los archivos que alguna prueba
+      # importa: las pantallas sin pruebas no aparecen y el número se infla.
+      - name: Incluir en la cobertura todos los archivos de lib/
+        run: |
+          find lib -name '*.dart' | sort \
+            | sed -e "s#^lib/#import 'package:opaego/#" -e "s#\$#';#" > test/cobertura_todos_test.dart
+          echo 'void main() {}' >> test/cobertura_todos_test.dart
       - name: Pruebas con cobertura
         run: flutter test --coverage --reporter expanded
-      - name: Resumen de cobertura
-        if: always()
+      - name: Cobertura mínima
         run: |
-          if [ -f coverage/lcov.info ]; then
-            awk -F: '/^LF:/{t+=$2} /^LH:/{c+=$2} END{printf "### Cobertura de pruebas: %d de %d líneas (%.1f %%)\n", c, t, 100*c/t}' coverage/lcov.info >> "$GITHUB_STEP_SUMMARY"
-          fi
+          awk -F: -v min="$COBERTURA_MINIMA" '/^LF:/{t+=$2} /^LH:/{c+=$2} END{
+            p = 100*c/t
+            printf "### Cobertura de pruebas: %d de %d líneas (%.1f %%), mínimo %s %%\n", c, t, p, min
+            if (p < min) exit 1
+          }' coverage/lcov.info | tee -a "$GITHUB_STEP_SUMMARY"
+          exit "${PIPESTATUS[0]}"
       - uses: actions/upload-artifact@v4
         if: always()
         with:

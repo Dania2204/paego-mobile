@@ -29,6 +29,10 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
   (Railway, `http://10.0.2.2:8000` en emulador Android, `http://localhost:8000` en Chrome; para
   Chrome el backend necesita `CORS_ALLOWED_ORIGINS` con el origen de la app).
 - Las pruebas de sqflite usan `sqflite_common_ffi` (dev dependency) y `http/testing.dart` MockClient.
+  Cada archivo de pruebas que toca SQLite fija su propio `DatabaseHelper.nombreArchivo` (flutter test
+  corre los archivos en paralelo). Las pruebas de widgets ponen `S.guardarTextosNuevos = false`
+  (si no, `S.text` escribe en SQLite y quedan temporizadores pendientes). JSON real de un envío:
+  `test/datos_prueba.dart`.
 
 ## Arquitectura
 
@@ -97,7 +101,9 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
 
 - Secreto opcional `ARCGIS_API_KEY` (mapas de ArcGIS en los builds de CI y release).
 - `ci.yml`: `flutter analyze` (cualquier aviso, incluso info, bloquea), `dart format
-  --set-exit-if-changed lib test` (bloquea: formatear antes de commitear), `flutter test --coverage`, builds web y
+  --set-exit-if-changed lib test` (bloquea: formatear antes de commitear), `flutter test --coverage`
+  con un archivo generado que importa todo `lib/` (cobertura real, con pantallas) y mínimo
+  `COBERTURA_MINIMA` (25 %; subirlo al agregar pruebas), builds web y
   APK como artefactos. Crea `.env` con `PAEGO_API_URL` (variable de repo opcional).
 - `release.yml`: con un tag `v*` compila el APK (firma debug) y lo publica en un GitHub Release.
 - Dependabot para pub y GitHub Actions.

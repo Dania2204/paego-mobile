@@ -46,3 +46,6 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Lo genera el CI para medir la cobertura de todo lib/
+test/cobertura_todos_test.dart
