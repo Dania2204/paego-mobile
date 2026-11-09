@@ -56,7 +56,7 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
   `POST /api/monitoreo/mi-posicion/` (efímera, la ve el admin en "Hoy" de la web) + punto del
   recorrido (RF-21) cada `intervalo_ubicacion_seg` del servidor para envíos en tránsito (encolado).
   Solo con la app abierta (no hay modo segundo plano). Si el GPS está apagado o sin permiso al
-  iniciar, revisa cada 5 s sin mostrar diálogos y arranca solo; `test/rastreo_test.dart` usa un
+  iniciar, revisa cada 5 s y arranca solo (no repite "activar GPS"; el permiso lo pide una sola vez si nunca se pidió); `test/rastreo_test.dart` usa un
   `Location` falso (`usarLocation`).
 - Modelos: `models/envio.dart` envuelve el JSON del `EnvioSerializer` (estados
   `ASIGNADO|EN_TRANSITO|ENTREGADO|CON_NOVEDAD|CANCELADO`). Roles: `CONDUCTOR→driver`,

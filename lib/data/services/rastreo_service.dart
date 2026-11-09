@@ -52,6 +52,9 @@ class RastreoService {
   bool _esConductor = false;
   bool _enviandoVivo = false;
   bool _revisando = false;
+
+  /// Ya se mostró el diálogo de permiso en este intento de arranque.
+  bool _permisoPedido = false;
   Duration _intervaloRecorrido = ApiConfig.intervaloRecorridoPorDefecto;
 
   /// Cambia en cada iniciar/detener: invalida los arranques que estaban en
@@ -71,7 +74,8 @@ class RastreoService {
     final gen = ++_generacion;
     _esConductor = esConductor;
     if (esConductor) transmitiendo.value = true;
-    if (!await _pedirPermisos(preguntar: true)) {
+    _permisoPedido = false;
+    if (!await _pedirPermisos(pedirServicio: true, pedirPermiso: true)) {
       if (gen == _generacion) _esperarGps(gen);
       return;
     }
@@ -89,7 +93,13 @@ class RastreoService {
       if (_revisando) return;
       _revisando = true;
       try {
-        if (await _pedirPermisos(preguntar: false) && gen == _generacion) {
+        // No insiste con "activar GPS", pero si el GPS ya está encendido y el
+        // permiso nunca se pidió (estaba apagado al iniciar), lo pide una vez.
+        final listo = await _pedirPermisos(
+          pedirServicio: false,
+          pedirPermiso: !_permisoPedido,
+        );
+        if (listo && gen == _generacion) {
           t.cancel();
           _timerReintento = null;
           await _arrancar(gen);
@@ -167,19 +177,25 @@ class RastreoService {
   /// Vuelve a pedir los permisos (botón "Reintentar" en la UI).
   Future<void> reintentar() => iniciar(esConductor: _esConductor);
 
-  /// Con [preguntar] muestra los diálogos del sistema (activar GPS, permiso);
-  /// sin él solo consulta el estado, para revisar en segundo plano sin
-  /// interrumpir al conductor.
-  Future<bool> _pedirPermisos({required bool preguntar}) async {
+  /// [pedirServicio] y [pedirPermiso] muestran los diálogos del sistema
+  /// (activar GPS, conceder permiso); sin ellos solo se consulta el estado,
+  /// para revisar en segundo plano sin interrumpir al conductor.
+  Future<bool> _pedirPermisos({
+    required bool pedirServicio,
+    required bool pedirPermiso,
+  }) async {
     try {
       var servicio = await _location.serviceEnabled();
-      if (!servicio && preguntar) servicio = await _location.requestService();
+      if (!servicio && pedirServicio) {
+        servicio = await _location.requestService();
+      }
       if (!servicio) {
         problema.value = 'El GPS del teléfono está apagado.';
         return false;
       }
       var permiso = await _location.hasPermission();
-      if (permiso == PermissionStatus.denied && preguntar) {
+      if (permiso == PermissionStatus.denied && pedirPermiso) {
+        _permisoPedido = true;
         permiso = await _location.requestPermission();
       }
       if (permiso != PermissionStatus.granted &&

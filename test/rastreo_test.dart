@@ -14,6 +14,10 @@ class _GpsFalso extends Fake implements Location {
   bool encendido = false;
   PermissionStatus permiso = PermissionStatus.granted;
   int dialogosServicio = 0;
+  int dialogosPermiso = 0;
+
+  /// Lo que responde el conductor si se le pide el permiso.
+  PermissionStatus respuestaPermiso = PermissionStatus.denied;
   final _posiciones = StreamController<LocationData>.broadcast();
 
   static LocationData punto(double lat, double lng) =>
@@ -34,7 +38,12 @@ class _GpsFalso extends Fake implements Location {
   Future<PermissionStatus> hasPermission() async => permiso;
 
   @override
-  Future<PermissionStatus> requestPermission() async => permiso;
+  Future<PermissionStatus> requestPermission() async {
+    dialogosPermiso++;
+    if (respuestaPermiso == PermissionStatus.granted)
+      permiso = respuestaPermiso;
+    return permiso;
+  }
 
   @override
   Future<bool> changeSettings({
@@ -127,6 +136,34 @@ void main() {
     await esperar(() => rastreo.escuchando);
     expect(rastreo.escuchando, isTrue);
     expect(rastreo.posicion.value, isNotNull);
+  });
+
+  test(
+    'instalación nueva: al encender el GPS pide el permiso una vez',
+    () async {
+      gps
+        ..permiso = PermissionStatus.denied
+        ..respuestaPermiso = PermissionStatus.granted;
+      await rastreo.iniciar(esConductor: true);
+      // Con el GPS apagado no llega a pedir el permiso.
+      expect(gps.dialogosPermiso, 0);
+
+      gps.encendido = true;
+      await esperar(() => rutas.contains('/api/monitoreo/mi-posicion/'));
+      expect(gps.dialogosPermiso, 1);
+      expect(rastreo.escuchando, isTrue);
+      expect(rastreo.problema.value, isNull);
+    },
+  );
+
+  test('si niega el permiso no vuelve a preguntar solo', () async {
+    gps.permiso = PermissionStatus.denied;
+    await rastreo.iniciar(esConductor: false);
+    gps.encendido = true;
+    await Future<void>.delayed(const Duration(milliseconds: 150));
+    expect(gps.dialogosPermiso, 1);
+    expect(rastreo.escuchando, isFalse);
+    expect(rastreo.problema.value, contains('permiso'));
   });
 
   test('al cerrar sesión deja de esperar el GPS', () async {
