@@ -94,8 +94,9 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
 - Textos bilingües (`lib/core/l10n/app_strings.dart`, clase `S`): `S.text('clave', 'es', 'en')`
   o `_t('es','en')` (clave = hash FNV del texto: cambiar el texto cambia la clave). Se sincronizan
   con la tabla Supabase `app_texts`.
-- Nutrición: llama a Gemini con `GEMINI_API_KEY`/`GEMINI_MODEL` del `.env`
-  (`lib/core/config/gemini_config.dart`). La clave viaja en el APK: a futuro, pasar por el backend.
+- Nutrición: el chat va a `POST /api/nutricion/asistente/` (`lib/data/remote/nutricion_api.dart`);
+  el backend consulta Gemini con su propia clave (la app no tiene ninguna). Si falla (sin red,
+  503 sin clave en el servidor, 502) se muestra un consejo local marcado como error.
 
 ## CI/CD (`.github/`)
 

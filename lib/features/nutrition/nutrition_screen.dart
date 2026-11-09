@@ -1,12 +1,10 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 import '../../app/theme.dart';
-import '../../core/config/gemini_config.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../data/models/user_model.dart';
+import '../../data/remote/nutricion_api.dart';
 
 // ── Model ────────────────────────────────────────────────────────────────────
 
@@ -131,9 +129,6 @@ class _NutritionScreenState extends State<NutritionScreen>
   double get _totalCarbs => _entries.fold(0, (s, e) => s + e.carbs);
   double get _totalFat => _entries.fold(0, (s, e) => s + e.fat);
 
-  String get _geminiApiKey => GeminiConfig.clave;
-  String get _geminiModel => GeminiConfig.modelo;
-
   // ── AI ────────────────────────────────────────────────────────────────────
 
   Future<void> _sendAiMessage(String userText) async {
@@ -154,111 +149,32 @@ class _NutritionScreenState extends State<NutritionScreen>
               '${e.carbs.toStringAsFixed(1)}g carbohidratos, '
               '${e.fat.toStringAsFixed(1)}g grasa [${e.mealType.label}]').join('\n')}\n\nTotales del día: ${_totalCalories.toStringAsFixed(0)} kcal | ${_totalProtein.toStringAsFixed(1)}g proteína | ${_totalCarbs.toStringAsFixed(1)}g carbohidratos | ${_totalFat.toStringAsFixed(1)}g grasa';
 
-    final systemPrompt =
-        '''
-Eres un nutricionista experto del Programa de Alimentación Escolar (PAE) en Colombia.
-Tu rol es ayudar al usuario ${widget.user.fullName} a llevar una dieta saludable y equilibrada.
-Puedes dar recetas, consejos de nutrición, análisis de la dieta del día y sugerencias.
-Responde siempre en español, de forma amigable, clara y práctica.
-Considera las tradiciones alimentarias colombianas cuando sea relevante.
+    final conversacion = <MensajeNutricion>[
+      for (final m in _aiMessages.where((m) => !m.isError))
+        (rol: m.role == 'assistant' ? 'asistente' : 'usuario', texto: m.text),
+    ];
 
-Contexto nutricional actual del usuario:
-$foodContext
-''';
-
-    if (_geminiApiKey.isEmpty) {
-      await Future<void>.delayed(const Duration(milliseconds: 450));
-      if (!mounted) return;
-      setState(() {
-        _aiMessages.add(
-          _AiMessage(
-            role: 'assistant',
-            text: _generateLocalNutritionReply(userText),
-          ),
-        );
-        _aiLoading = false;
-      });
-      _scrollToBottom();
-      return;
-    }
-
-    final contents = _aiMessages
-        .where((msg) => !msg.isError)
-        .map(
-          (msg) => {
-            'role': msg.role == 'assistant' ? 'model' : 'user',
-            'parts': [
-              {'text': msg.text},
-            ],
-          },
-        )
-        .toList();
-
+    _AiMessage respuesta;
     try {
-      final response = await http.post(
-        Uri.parse(
-          'https://generativelanguage.googleapis.com/v1beta/models/$_geminiModel:generateContent?key=$_geminiApiKey',
-        ),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'systemInstruction': {
-            'parts': [
-              {'text': systemPrompt},
-            ],
-          },
-          'contents': contents,
-          'generationConfig': {'temperature': 0.7, 'maxOutputTokens': 1024},
-        }),
+      final texto = await NutricionApi.preguntar(
+        conversacion,
+        contexto: foodContext,
       );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as Map<String, dynamic>;
-        final candidates = data['candidates'] as List<dynamic>? ?? [];
-        final first = candidates.isNotEmpty
-            ? candidates.first as Map<String, dynamic>
-            : null;
-        final content = first?['content'] as Map<String, dynamic>?;
-        final parts = content?['parts'] as List<dynamic>? ?? [];
-        final text = parts
-            .whereType<Map<String, dynamic>>()
-            .map((part) => part['text']?.toString() ?? '')
-            .join()
-            .trim();
-        setState(() {
-          _aiMessages.add(
-            _AiMessage(
-              role: 'assistant',
-              text: text.isEmpty
-                  ? _generateLocalNutritionReply(userText)
-                  : text,
-            ),
-          );
-        });
-      } else {
-        setState(() {
-          _aiMessages.add(
-            _AiMessage(
-              role: 'assistant',
-              text: _generateLocalNutritionReply(userText),
-              isError: true,
-            ),
-          );
-        });
-      }
+      respuesta = _AiMessage(role: 'assistant', text: texto);
     } catch (_) {
-      setState(() {
-        _aiMessages.add(
-          _AiMessage(
-            role: 'assistant',
-            text: _generateLocalNutritionReply(userText),
-            isError: true,
-          ),
-        );
-      });
-    } finally {
-      setState(() => _aiLoading = false);
-      _scrollToBottom();
+      // Sin red, sin clave en el servidor o Gemini caído: consejo local.
+      respuesta = _AiMessage(
+        role: 'assistant',
+        text: _generateLocalNutritionReply(userText),
+        isError: true,
+      );
     }
+    if (!mounted) return;
+    setState(() {
+      _aiMessages.add(respuesta);
+      _aiLoading = false;
+    });
+    _scrollToBottom();
   }
 
   void _scrollToBottom() {
