@@ -4,4 +4,9 @@
          to allow setting breakpoints, to provide hot reload, etc.
     -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+    <!-- Solo en debug: permite HTTP sin TLS para probar contra el backend local
+         (adb reverse → http://localhost:8000 o la IP del PC). El release sigue
+         exigiendo HTTPS. -->
+    <application android:usesCleartextTraffic="true" />
 </manifest>
