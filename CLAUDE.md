@@ -81,7 +81,8 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
 - Textos bilingües (`lib/core/l10n/app_strings.dart`, clase `S`): `S.text('clave', 'es', 'en')`
   o `_t('es','en')` (clave = hash FNV del texto: cambiar el texto cambia la clave). Se sincronizan
   con la tabla Supabase `app_texts`.
-- Nutrición: llama a Gemini con `GEMINI_API_KEY` del `.env`.
+- Nutrición: llama a Gemini con `GEMINI_API_KEY`/`GEMINI_MODEL` del `.env`
+  (`lib/core/config/gemini_config.dart`). La clave viaja en el APK: a futuro, pasar por el backend.
 
 ## CI/CD (`.github/`)
 
@@ -94,8 +95,7 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
 
 ## Pendientes conocidos
 
-- `nutrition_screen.dart` lee `dotenv.env['<la clave literal>']` en vez de `dotenv.env['GEMINI_API_KEY']`.
-- `.env.example` contiene claves reales de Supabase y Gemini versionadas en el repo.
+- La clave de Gemini que estuvo versionada en `.env.example` sigue en el historial de git: rotarla.
 - Las tablas viejas (`users`, `delivery_orders`, `delivery_reports`, `tracking_points`,
   `school_locations`) y `personnel_screen.dart` ya no se usan.
 

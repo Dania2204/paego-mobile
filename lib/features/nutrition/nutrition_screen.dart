@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../../app/theme.dart';
+import '../../core/config/gemini_config.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../data/models/user_model.dart';
@@ -131,11 +131,8 @@ class _NutritionScreenState extends State<NutritionScreen>
   double get _totalCarbs => _entries.fold(0, (s, e) => s + e.carbs);
   double get _totalFat => _entries.fold(0, (s, e) => s + e.fat);
 
-  String get _geminiApiKey => dotenv.env['AIzaSyBN5q-ndv00o91fGS0f_2VG_WfV0_1dHVE']?.trim() ?? '';
-  String get _geminiModel =>
-      (dotenv.env['GEMINI_MODEL']?.trim().isNotEmpty ?? false)
-      ? dotenv.env['GEMINI_MODEL']!.trim()
-      : 'gemini-1.5-flash';
+  String get _geminiApiKey => GeminiConfig.clave;
+  String get _geminiModel => GeminiConfig.modelo;
 
   // ── AI ────────────────────────────────────────────────────────────────────
 
