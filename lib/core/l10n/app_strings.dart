@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import '../../data/datasources/database_helper.dart';
 
 /// Sistema de localización bilingüe (Español / English).
@@ -8,6 +10,11 @@ abstract class S {
   static Map<String, Map<String, String>> _dbTexts = {};
   static final Set<String> _queuedSeeds = {};
   static final List<Future<void>> _pendingSeedWrites = [];
+
+  /// Las pruebas de widgets lo apagan: guardar cada texto nuevo en SQLite
+  /// deja temporizadores pendientes en el reloj simulado de flutter_test.
+  @visibleForTesting
+  static bool guardarTextosNuevos = true;
   static String get locale => _locale;
   static void setLocale(String l) => _locale = l == 'en' ? 'en' : 'es';
   static bool get isSpanish => _locale == 'es';
@@ -204,6 +211,7 @@ abstract class S {
     if (values.containsKey(locale)) return;
 
     values[locale] = value;
+    if (!guardarTextosNuevos) return;
     final seedKey = '$key:$locale';
     if (!_queuedSeeds.add(seedKey)) return;
 

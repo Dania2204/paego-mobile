@@ -10,12 +10,13 @@ Future<Set<String>> tablas(Database db) async => (await db.rawQuery(
 void main() {
   setUpAll(() {
     sqfliteFfiInit();
+    DatabaseHelper.nombreArchivo = 'prueba_migracion.db';
     databaseFactory = databaseFactoryFfi;
   });
 
   test('al actualizar desde la versión 5 borra las tablas del modo local '
       'y conserva los datos de la API', () async {
-    final ruta = p.join(await getDatabasesPath(), 'paego.db');
+    final ruta = p.join(await getDatabasesPath(), DatabaseHelper.nombreArchivo);
     await databaseFactory.deleteDatabase(ruta);
     final vieja = await openDatabase(
       ruta,

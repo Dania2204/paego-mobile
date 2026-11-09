@@ -21,9 +21,10 @@ void main() {
 
   setUpAll(() async {
     sqfliteFfiInit();
+    DatabaseHelper.nombreArchivo = 'prueba_sync.db';
     databaseFactory = databaseFactoryFfi;
     await databaseFactory.deleteDatabase(
-      p.join(await getDatabasesPath(), 'paego.db'),
+      p.join(await getDatabasesPath(), DatabaseHelper.nombreArchivo),
     );
   });
 

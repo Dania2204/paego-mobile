@@ -8,8 +8,13 @@ class DatabaseHelper {
   static final instance = DatabaseHelper._();
   static Database? _db;
 
+  /// Archivo de la base. Cada archivo de pruebas usa el suyo: flutter test
+  /// los corre en paralelo y compartirían el mismo `paego.db` en disco.
+  @visibleForTesting
+  static String nombreArchivo = 'paego.db';
+
   Future<Database> get database async {
-    _db ??= await _initDB('paego.db');
+    _db ??= await _initDB(nombreArchivo);
     return _db!;
   }
 
