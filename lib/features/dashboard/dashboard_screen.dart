@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import '../../app/theme.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../core/widgets/shared_widgets.dart';
-import '../../data/datasources/database_helper.dart';
-import '../../data/models/delivery_model.dart';
+import '../../data/models/envio.dart';
 import '../../data/models/user_model.dart';
 import '../../data/models/user_role.dart';
+import '../../data/remote/api_client.dart';
+import '../../data/repositories/envio_repository.dart';
+import '../envios/envio_widgets.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key, required this.user});
@@ -20,27 +22,54 @@ class _DashboardScreenState extends State<DashboardScreen> {
   int _pending = 0;
   int _enRoute = 0;
   int _delivered = 0;
-  List<DeliveryOrder> _recent = [];
+  List<Envio> _recent = [];
   bool _loading = true;
 
   @override
   void initState() {
     super.initState();
+    EnvioRepository.instance.envios.addListener(_calcular);
+    _calcular();
     _load();
   }
 
-  Future<void> _load() async {
-    final orders = await DatabaseHelper.instance.getOrders();
+  @override
+  void dispose() {
+    EnvioRepository.instance.envios.removeListener(_calcular);
+    super.dispose();
+  }
+
+  void _calcular() {
+    if (!mounted) return;
+    final envios = EnvioRepository.instance.envios.value;
     setState(() {
-      _orders = orders.length;
-      _pending = orders.where((o) => o.status == DeliveryStatus.pending).length;
-      _enRoute = orders.where((o) => o.status == DeliveryStatus.enRoute).length;
-      _delivered = orders
-          .where((o) => o.status == DeliveryStatus.delivered)
+      _orders = envios.where((e) => e.estado.esActivo).length;
+      _pending = envios.where((e) => e.estado == EstadoEnvio.asignado).length;
+      _enRoute = envios.where((e) => e.estado == EstadoEnvio.enTransito).length;
+      _delivered = envios
+          .where((e) => e.estado == EstadoEnvio.entregado || e.estado == EstadoEnvio.conNovedad)
           .length;
-      _recent = orders.take(5).toList();
-      _loading = false;
+      // Primero los activos, luego los más recientes.
+      final ordenados = [...envios]..sort((a, b) {
+          if (a.estado.esActivo != b.estado.esActivo) return a.estado.esActivo ? -1 : 1;
+          return (b.programadoPara ?? DateTime(0)).compareTo(a.programadoPara ?? DateTime(0));
+        });
+      _recent = ordenados.take(5).toList();
+      if (envios.isNotEmpty) _loading = false;
     });
+  }
+
+  Future<void> _load() async {
+    try {
+      await EnvioRepository.instance.refrescar();
+    } on SinConexionException {
+      // Se muestran los datos guardados en el teléfono.
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
+    }
+    if (mounted) setState(() => _loading = false);
   }
 
   @override
@@ -48,10 +77,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final user = widget.user;
     final hour = DateTime.now().hour;
     final greeting = hour < 12
-        ? 'Good morning'
+        ? S.text('saludo.manana', 'Buenos días', 'Good morning')
         : hour < 18
-        ? 'Good afternoon'
-        : 'Good evening';
+        ? S.text('saludo.tarde', 'Buenas tardes', 'Good afternoon')
+        : S.text('saludo.noche', 'Buenas noches', 'Good evening');
 
     return Scaffold(
       body: RefreshIndicator(
@@ -202,13 +231,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: PaeColors.statusPending,
                       ),
                       StatCard(
-                        label: 'En route',
+                        label: S.text('envio.estado.en_transito', 'En tránsito', 'In transit'),
                         value: '$_enRoute',
                         icon: Icons.directions_car_rounded,
                         color: PaeColors.statusEnRoute,
                       ),
                       StatCard(
-                        label: 'Delivered',
+                        label: S.text('envio.estado.entregados', 'Entregados', 'Delivered'),
                         value: '$_delivered',
                         icon: Icons.check_circle_rounded,
                         color: PaeColors.statusDelivered,
@@ -261,7 +290,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
               else
                 SliverList(
                   delegate: SliverChildBuilderDelegate(
-                    (ctx, i) => _OrderTile(order: _recent[i]),
+                    (ctx, i) => EnvioTile(
+                      envio: _recent[i],
+                      onTap: () => mostrarDetalleEnvio(ctx, _recent[i], user),
+                    ),
                     childCount: _recent.length,
                   ),
                 ),
@@ -419,82 +451,6 @@ class _QATile extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-// ── Order Tile ────────────────────────────────────────────────────────────────
-class _OrderTile extends StatelessWidget {
-  const _OrderTile({required this.order});
-  final DeliveryOrder order;
-
-  Color get _statusColor {
-    switch (order.status) {
-      case DeliveryStatus.pending:
-        return PaeColors.statusPending;
-      case DeliveryStatus.assigned:
-        return PaeColors.statusAssigned;
-      case DeliveryStatus.enRoute:
-        return PaeColors.statusEnRoute;
-      case DeliveryStatus.delivered:
-        return PaeColors.statusDelivered;
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 5),
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: isDark ? PaeColors.cardDark : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.08) : PaeColors.divider,
-        ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: PaeColors.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: const Icon(
-              Icons.local_shipping_rounded,
-              color: PaeColors.primary,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  order.orderId,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 14,
-                    fontFamily: PaeTypography.fontBody,
-                  ),
-                ),
-                Text(
-                  order.schoolName,
-                  style: const TextStyle(
-                    color: PaeColors.textSecondary,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          StatusBadge(label: order.status.label, color: _statusColor),
-        ],
       ),
     );
   }

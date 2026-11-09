@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:sqflite_common_ffi_web/sqflite_ffi_web.dart';
 
@@ -22,10 +23,15 @@ Future<void> main() async {
     // The app can still run with local defaults when .env is absent.
   }
 
-  await AppTextSyncService.instance.pullRemoteTexts();
+  await initializeDateFormatting('es');
+
+  // Textos de la interfaz desde Supabase (si no hay red, se usan los locales).
+  try {
+    await AppTextSyncService.instance.pullRemoteTexts();
+  } catch (_) {}
   await S.loadFromDatabase();
   await S.seedDefaults();
-  await AppTextSyncService.instance.pushLocalTexts();
+  AppTextSyncService.instance.pushLocalTexts().catchError((_) {});
 
   // Force portrait orientation
   if (!kIsWeb) {
