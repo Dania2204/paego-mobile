@@ -189,8 +189,9 @@ class _LoginScreenState extends State<LoginScreen>
                               ),
                             ),
                             validator: (v) {
-                              if (v == null || v.trim().isEmpty)
+                              if (v == null || v.trim().isEmpty) {
                                 return S.loginRequired;
+                              }
                               return null;
                             },
                           ),

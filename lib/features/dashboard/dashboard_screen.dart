@@ -56,8 +56,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // Primero los activos, luego los más recientes.
       final ordenados = [...envios]
         ..sort((a, b) {
-          if (a.estado.esActivo != b.estado.esActivo)
+          if (a.estado.esActivo != b.estado.esActivo) {
             return a.estado.esActivo ? -1 : 1;
+          }
           return (b.programadoPara ?? DateTime(0)).compareTo(
             a.programadoPara ?? DateTime(0),
           );
