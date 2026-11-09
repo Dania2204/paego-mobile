@@ -36,16 +36,6 @@ extension UserRoleX on UserRole {
   bool get canViewAllReports =>
       this == UserRole.superAdmin || this == UserRole.admin;
 
-  bool get canManagePersonnel => false;
-
-  bool get canManageUsers => canManagePersonnel;
-
-  bool get canDeleteUsers => canManageUsers;
-
-  bool get canCreateOrders => false;
-
-  bool get canAddSchoolLocation => false;
-
   /// Conductor: salida, recorrido, llegada (RF-19 a RF-23).
   bool get canDriveRoute => this == UserRole.driver;
 

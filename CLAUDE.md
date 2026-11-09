@@ -64,7 +64,9 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
   `user_role.dart` solo muestran/ocultan UI, los permisos reales los aplica la API.
 - UI de envíos compartida en `lib/features/envios/envio_widgets.dart` (detalle, acciones por rol,
   novedad, confirmar recepción con código de 6 dígitos). Mapa, dashboard e informes leen de
-  `EnvioRepository`/`SyncService`. Personal y crear usuarios están desactivados (se hacen en la web).
+  `EnvioRepository`/`SyncService`. Los usuarios se crean en la web (no hay pantalla de personal).
+- SQLite `paego.db` versión 6: `app_texts`, `envios_cache`, `operaciones`. La v6 borra las tablas
+  del modo local anterior a la API (`users`, `delivery_orders`, …).
 
 ### Mapa base (`lib/core/config/mapa_base.dart`)
 - `flutter_map` (código abierto) con teselas del servicio **Static Basemap Tiles de ArcGIS
@@ -96,8 +98,6 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
 ## Pendientes conocidos
 
 - La clave de Gemini que estuvo versionada en `.env.example` sigue en el historial de git: rotarla.
-- Las tablas viejas (`users`, `delivery_orders`, `delivery_reports`, `tracking_points`,
-  `school_locations`) y `personnel_screen.dart` ya no se usan.
 
 ## Reglas del usuario
 

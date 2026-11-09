@@ -74,22 +74,6 @@ class AuthService {
     );
   }
 
-  Future<AuthResult> createUser({
-    required AppUser createdBy,
-    required String fullName,
-    required String email,
-    required String phone,
-    required String idNumber,
-    required String password,
-    required String role,
-    String? institution,
-    String? photoPath,
-  }) async {
-    return AuthResult.failure(
-      'Los usuarios se crean en la plataforma web (menú Usuarios o Conductores).',
-    );
-  }
-
   Future<AuthResult> login({
     required String email,
     required String password,

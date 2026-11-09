@@ -336,25 +336,6 @@ class _QuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actions = <_QA>[
-      if (user.role.canCreateOrders)
-        _QA(
-          Icons.add_road_rounded,
-          S.text('quick.new_order', 'Nuevo pedido', 'New Order'),
-          PaeColors.secondary,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  S.text(
-                    'quick.goto_map_deliveries',
-                    'Ve a Mapa para gestionar entregas',
-                    'Go to Map tab to manage deliveries',
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
       if (user.role.canSubmitReport)
         _QA(
           Icons.assignment_add,
@@ -368,48 +349,6 @@ class _QuickActions extends StatelessWidget {
                     'quick.goto_reports',
                     'Ve a Informes',
                     'Go to Reports tab',
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      if (user.role.canAddSchoolLocation)
-        _QA(
-          Icons.add_location_alt_rounded,
-          S.text(
-            'quick.add_school_pin',
-            'Agregar pin de escuela',
-            'Add School Pin',
-          ),
-          PaeColors.info,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  S.text(
-                    'quick.goto_map_school',
-                    'Ve a Mapa para agregar la ubicacion de la escuela',
-                    'Go to Map tab to add school location',
-                  ),
-                ),
-              ),
-            );
-          },
-        ),
-      if (user.role.canManageUsers)
-        _QA(
-          Icons.person_add_rounded,
-          S.text('quick.add_personnel', 'Agregar personal', 'Add Personnel'),
-          PaeColors.primaryLight,
-          () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  S.text(
-                    'quick.goto_personnel',
-                    'Ve a Personal',
-                    'Go to Personnel tab',
                   ),
                 ),
               ),

@@ -5,12 +5,10 @@ import '../../core/router/app_router.dart';
 import '../../data/repositories/auth_service.dart';
 import '../../data/sync/sync_service.dart';
 import '../../data/models/user_model.dart';
-import '../../data/models/user_role.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../map/map_screen.dart';
 import '../nutrition/nutrition_screen.dart';
 import '../reports/reports_screen.dart';
-import '../personnel/personnel_screen.dart';
 import '../profile/profile_screen.dart';
 
 class HomeShell extends StatefulWidget {
@@ -124,12 +122,6 @@ class _HomeShellState extends State<HomeShell> {
         label: S.navNutrition,
         screen: NutritionScreen(user: u),
       ),
-      if (u.role.canManagePersonnel)
-        _TabDef(
-          icon: Icons.people_rounded,
-          label: S.personnelTitle,
-          screen: PersonnelScreen(user: u),
-        ),
       _TabDef(
         icon: Icons.person_rounded,
         label: S.navProfile,
