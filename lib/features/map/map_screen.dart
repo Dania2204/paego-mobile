@@ -5,6 +5,7 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 
 import '../../app/theme.dart';
+import '../../core/config/mapa_base.dart';
 import '../../core/l10n/app_strings.dart';
 import '../../core/widgets/shared_widgets.dart';
 import '../../data/models/envio.dart';
@@ -60,6 +61,7 @@ class _MapScreenState extends State<MapScreen> {
   @override
   void initState() {
     super.initState();
+    MapaBase.cargar();
     RastreoService.instance.posicion.addListener(_alMoverse);
     if (_esAdmin) {
       _cargarEnVivo();
@@ -135,6 +137,40 @@ class _MapScreenState extends State<MapScreen> {
     }
   }
 
+  Future<void> _elegirEstiloMapa() async {
+    final elegido = await showModalBottomSheet<EstiloMapa>(
+      context: context,
+      showDragHandle: true,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+              child: Text(
+                S.text('mapa.estilo', 'Estilo del mapa', 'Map style'),
+                style: Theme.of(ctx).textTheme.titleMedium,
+              ),
+            ),
+            for (final e in MapaBase.disponibles)
+              ListTile(
+                leading: Icon(
+                  e == MapaBase.estilo.value
+                      ? Icons.radio_button_checked_rounded
+                      : Icons.radio_button_unchecked_rounded,
+                  color: PaeColors.primary,
+                ),
+                title: Text(S.isSpanish ? e.nombreEs : e.nombreEn),
+                subtitle: Text(e.esArcgis ? 'ArcGIS' : 'OpenStreetMap'),
+                onTap: () => Navigator.pop(ctx, e),
+              ),
+          ],
+        ),
+      ),
+    );
+    if (elegido != null) await MapaBase.elegir(elegido);
+  }
+
   void _aviso(String texto) {
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(texto)));
@@ -205,10 +241,9 @@ class _MapScreenState extends State<MapScreen> {
                     initialZoom: 13.5,
                   ),
                   children: [
-                    TileLayer(
-                      urlTemplate:
-                          'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                      userAgentPackageName: 'com.paego.app',
+                    ValueListenableBuilder<EstiloMapa>(
+                      valueListenable: MapaBase.estilo,
+                      builder: (context, estilo, _) => MapaBase.capa(estilo),
                     ),
                     if (_recorrido.length > 1)
                       PolylineLayer(
@@ -270,10 +305,13 @@ class _MapScreenState extends State<MapScreen> {
                         ],
                       ),
                     ),
-                    const RichAttributionWidget(
-                      attributions: [
-                        TextSourceAttribution('© OpenStreetMap contributors'),
-                      ],
+                    ValueListenableBuilder<EstiloMapa>(
+                      valueListenable: MapaBase.estilo,
+                      builder: (context, estilo, _) => RichAttributionWidget(
+                        // La clave fuerza a reconstruirla al cambiar de estilo.
+                        key: ValueKey(estilo),
+                        attributions: MapaBase.atribuciones(estilo),
+                      ),
                     ),
                   ],
                 ),
@@ -301,6 +339,19 @@ class _MapScreenState extends State<MapScreen> {
                             )
                             .replaceAll('{n}', '${activos.length}'),
                   actions: [
+                    if (MapaBase.disponibles.length > 1)
+                      IconButton(
+                        icon: const Icon(
+                          Icons.layers_rounded,
+                          color: Colors.white,
+                        ),
+                        onPressed: _elegirEstiloMapa,
+                        tooltip: S.text(
+                          'mapa.estilo',
+                          'Estilo del mapa',
+                          'Map style',
+                        ),
+                      ),
                     IconButton(
                       icon: const Icon(
                         Icons.my_location_rounded,
