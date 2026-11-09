@@ -110,6 +110,12 @@ class AuthService {
       if (e.statusCode == 401) {
         return AuthResult.failure('Correo o contraseña incorrectos.');
       }
+      if (e.statusCode == 429) {
+        // El servidor limita los intentos por conexión (fuerza bruta).
+        return AuthResult.failure(
+          'Demasiados intentos. Espere un minuto e intente de nuevo.',
+        );
+      }
       return AuthResult.failure(e.mensaje);
     } catch (_) {
       return AuthResult.failure('No se pudo iniciar sesión. Intente de nuevo.');
