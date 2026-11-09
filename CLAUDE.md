@@ -64,6 +64,17 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
   novedad, confirmar recepción con código de 6 dígitos). Mapa, dashboard e informes leen de
   `EnvioRepository`/`SyncService`. Personal y crear usuarios están desactivados (se hacen en la web).
 
+### Mapa base (`lib/core/config/mapa_base.dart`)
+- `flutter_map` (código abierto) con teselas del servicio **Static Basemap Tiles de ArcGIS
+  Location Platform** si `ARCGIS_API_KEY` está en `.env`; sin clave, OpenStreetMap. Teselas de
+  512 px → `tileSize: 512` + `zoomOffset: -1`; URL `.../v1/{familia}/{estilo}/static/tile/{z}/{y}/{x}?token=`
+  (fila antes que columna). Capa gratuita: 2 M teselas/mes, sin tope automático → restringir la
+  clave en location.arcgis.com. Atribución "Powered by Esri" obligatoria. El estilo elegido se
+  guarda en SharedPreferences (`paego_estilo_mapa`). El SDK oficial `arcgis_maps` no se usa:
+  es solo Android/iOS (no web) y exige licencia para producción.
+- Debug Android permite HTTP sin TLS (`android/app/src/debug/AndroidManifest.xml`) para probar
+  contra el backend local con `adb reverse tcp:8000 tcp:8000` y `PAEGO_API_URL=http://localhost:8000`.
+
 ### Otros
 - Textos bilingües (`lib/core/l10n/app_strings.dart`, clase `S`): `S.text('clave', 'es', 'en')`
   o `_t('es','en')` (clave = hash FNV del texto: cambiar el texto cambia la clave). Se sincronizan
@@ -72,6 +83,7 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
 
 ## CI/CD (`.github/`)
 
+- Secreto opcional `ARCGIS_API_KEY` (mapas de ArcGIS en los builds de CI y release).
 - `ci.yml`: `flutter analyze --no-fatal-infos` (errores y warnings bloquean), formato informativo
   (el código previo no está formateado con `dart format`), `flutter test --coverage`, builds web y
   APK como artefactos. Crea `.env` con `PAEGO_API_URL` (variable de repo opcional).
@@ -80,6 +92,8 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
 
 ## Pendientes conocidos
 
+- `RastreoService`: si el GPS está apagado al iniciar sesión, el rastreo no se reanuda solo al
+  encenderlo (hay que tocar "mi ubicación", que llama a `reintentar()`).
 - `nutrition_screen.dart` lee `dotenv.env['<la clave literal>']` en vez de `dotenv.env['GEMINI_API_KEY']`.
 - `.env.example` contiene claves reales de Supabase y Gemini versionadas en el repo.
 - Las tablas viejas (`users`, `delivery_orders`, `delivery_reports`, `tracking_points`,
