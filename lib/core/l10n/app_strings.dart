@@ -282,7 +282,8 @@ abstract class S {
   // ── Roles ─────────────────────────────────────────────────────────────────
   static String get roleSuperAdmin => _t('Super Admin', 'Super Admin');
   static String get roleAdmin => _t('Admin', 'Admin');
-  static String get roleRector => _t('Rector', 'Rector');
+  static String get roleRector =>
+      _t('Institución educativa', 'School');
   static String get roleDriver => _t('Conductor', 'Driver');
 
   static String get roleDescSuperAdmin => _t(
@@ -290,16 +291,16 @@ abstract class S {
     'Full system access — view and manage everything.',
   );
   static String get roleDescAdmin => _t(
-    'Gestiona entregas y conductores en tu municipio.',
-    'Manage deliveries and drivers in your municipality.',
+    'Consulta los envíos; la gestión se hace en la plataforma web.',
+    'View deliveries; management is done on the web platform.',
   );
   static String get roleDescRector => _t(
-    'Rastrea entregas a tu escuela y envía informes.',
-    'Track deliveries to your school and submit reports.',
+    'Sigue los envíos hacia tu sede y confirma la recepción.',
+    'Track deliveries to your school and confirm reception.',
   );
   static String get roleDescDriver => _t(
-    'Acepta órdenes y navega rutas de entrega.',
-    'Accept orders and navigate delivery routes.',
+    'Registra salida, recorrido y llegada de tus envíos.',
+    'Record departure, route and arrival of your deliveries.',
   );
 
   // ── Home / Dashboard ──────────────────────────────────────────────────────

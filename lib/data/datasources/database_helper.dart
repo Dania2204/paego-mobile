@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:flutter/foundation.dart';
 import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
@@ -23,7 +21,7 @@ class DatabaseHelper {
     final path = kIsWeb ? name : join(await getDatabasesPath(), name);
     return openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -104,18 +102,20 @@ class DatabaseHelper {
     ''');
 
     await _createAppTextsTable(db);
-    await _seedDefaultAdmin(db, resetCredentials: true);
+    await _createSyncTables(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      await _seedDefaultAdmin(db, resetCredentials: true);
-    }
     if (oldVersion < 3) {
       await _createAppTextsTable(db);
     }
     if (oldVersion < 4) {
       await _migrateAppTextsSyncColumns(db);
+    }
+    if (oldVersion < 5) {
+      // La autenticación pasa a la API de oPAEGo: se elimina el admin local.
+      await db.delete('users', where: 'LOWER(email) = ?', whereArgs: ['admin']);
+      await _createSyncTables(db);
     }
   }
 
@@ -148,47 +148,40 @@ class DatabaseHelper {
     }
   }
 
-  Future<void> _seedDefaultAdmin(
-    Database db, {
-    required bool resetCredentials,
-  }) async {
-    final rows = await db.query(
-      'users',
-      where: 'LOWER(email) = ?',
-      whereArgs: ['admin'],
-      limit: 1,
+  /// Tablas de la integración con la API de oPAEGo (RF-38):
+  /// - `envios_cache`: últimos envíos descargados, para trabajar sin conexión.
+  /// - `operaciones`: cola de operaciones capturadas en el teléfono. Cada una
+  ///   lleva un `uuid` (uuid_cliente) que hace idempotente su envío al servidor.
+  Future<void> _createSyncTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS envios_cache (
+        usuario_id     INTEGER NOT NULL,
+        id             INTEGER NOT NULL,
+        json           TEXT NOT NULL,
+        actualizado_en TEXT NOT NULL,
+        PRIMARY KEY (usuario_id, id)
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS operaciones (
+        uuid         TEXT PRIMARY KEY,
+        usuario_id   INTEGER NOT NULL,
+        tipo         TEXT NOT NULL,
+        envio_id     INTEGER,
+        ocurrido_en  TEXT NOT NULL,
+        datos        TEXT NOT NULL,
+        resumen      TEXT NOT NULL DEFAULT '',
+        estado       TEXT NOT NULL DEFAULT 'pendiente',
+        respuesta    TEXT,
+        intentos     INTEGER NOT NULL DEFAULT 0,
+        creado_en    TEXT NOT NULL,
+        enviado_en   TEXT
+      )
+    ''');
+    await db.execute(
+      'CREATE INDEX IF NOT EXISTS operaciones_usuario_estado '
+      'ON operaciones (usuario_id, estado, ocurrido_en)',
     );
-
-    if (rows.isEmpty) {
-      await db.insert('users', {
-        'full_name': 'Administrador',
-        'email': 'admin',
-        'phone': '',
-        'id_number': 'ADMIN-${DateTime.now().millisecondsSinceEpoch}',
-        'role': 'admin',
-        'institution': null,
-        'photo_path': null,
-        'password_hash': _hashPassword('12345678'),
-        'created_at': DateTime.now().toIso8601String(),
-        'synced_at': null,
-        'is_synced': 0,
-      });
-      return;
-    }
-
-    if (!resetCredentials) return;
-
-    await db.update(
-      'users',
-      {'role': 'admin', 'password_hash': _hashPassword('12345678')},
-      where: 'id = ?',
-      whereArgs: [rows.first['id']],
-    );
-  }
-
-  String _hashPassword(String password) {
-    final bytes = utf8.encode('${password}paego_salt_2024');
-    return base64Encode(bytes);
   }
 
   // ── Users ─────────────────────────────────────────────────────────────────

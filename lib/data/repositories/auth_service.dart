@@ -1,33 +1,62 @@
 import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../datasources/database_helper.dart';
 import '../models/user_model.dart';
 import '../models/user_role.dart';
+import '../remote/api_client.dart';
+import '../services/rastreo_service.dart';
+import '../sync/sync_service.dart';
+import 'envio_repository.dart';
 
-/// Handles login, registration, and session persistence.
+/// Sesión del usuario contra la API de la plataforma web PAEGo (RF-01, RF-02).
+///
+/// Los usuarios los crea el administrador en la web; la app solo inicia
+/// sesión. El perfil y los tokens se guardan en el teléfono para que la app
+/// abra sin conexión y siga registrando operaciones en la cola (RF-38).
 class AuthService {
   AuthService._();
   static final instance = AuthService._();
 
-  static const _sessionKey = 'session_user_id';
+  static const _kUsuario = 'paego_usuario';
+
   AppUser? _currentUser;
 
   AppUser? get currentUser => _currentUser;
   bool get isLoggedIn => _currentUser != null;
 
-  // Simple hash — in production use bcrypt/argon2 via a plugin
-  String _hash(String password) {
-    final bytes = utf8.encode(password + 'paego_salt_2024');
-    return base64Encode(bytes);
+  /// Restaura la sesión guardada (sin red) y, si hay conexión, refresca el perfil.
+  Future<void> init() async {
+    await ApiClient.instance.cargarTokens();
+    final prefs = await SharedPreferences.getInstance();
+    final guardado = prefs.getString(_kUsuario);
+    if (guardado == null) return;
+    try {
+      _currentUser = AppUser.fromPerfil(
+        (jsonDecode(guardado) as Map).cast<String, dynamic>(),
+      );
+    } catch (_) {
+      await prefs.remove(_kUsuario);
+      return;
+    }
+    try {
+      final perfil = await ApiClient.instance.get('/auth/yo/');
+      await _guardarUsuario(
+        AppUser.fromPerfil((perfil as Map).cast<String, dynamic>()),
+      );
+    } catch (_) {
+      // Sin conexión o sesión vencida: se sigue con el perfil guardado.
+    }
   }
 
-  Future<void> init() async {
-    final prefs = await SharedPreferences.getInstance();
-    final userId = prefs.getInt(_sessionKey);
-    if (userId != null) {
-      _currentUser = await DatabaseHelper.instance.getUserById(userId);
-    }
+  /// Arranca los servicios que dependen del usuario (cola, envíos, GPS).
+  Future<void> iniciarServicios() async {
+    final user = _currentUser;
+    if (user == null) return;
+    await SyncService.instance.iniciar(user.id!);
+    await EnvioRepository.instance.iniciar(user.id!);
+    EnvioRepository.instance.refrescar().then((_) {}, onError: (_) {});
+    await RastreoService.instance.iniciar(esConductor: user.role.canDriveRoute);
   }
 
   Future<AuthResult> register({
@@ -41,7 +70,7 @@ class AuthService {
     String? photoPath,
   }) async {
     return AuthResult.failure(
-      'Self-registration is disabled. Contact an administrator.',
+      'Los usuarios los crea el administrador en la plataforma web.',
     );
   }
 
@@ -56,31 +85,9 @@ class AuthService {
     String? institution,
     String? photoPath,
   }) async {
-    if (!createdBy.role.canManageUsers) {
-      return AuthResult.failure('Only administrators can create users.');
-    }
-
-    try {
-      final user = AppUser(
-        fullName: fullName,
-        email: email.toLowerCase().trim(),
-        phone: phone,
-        idNumber: idNumber,
-        role: UserRoleX.fromString(role),
-        institution: institution,
-        photoPath: photoPath,
-        passwordHash: _hash(password),
-        createdAt: DateTime.now(),
-        isSynced: false,
-      );
-      final id = await DatabaseHelper.instance.insertUser(user);
-      return AuthResult.success(user.copyWith(id: id));
-    } catch (e) {
-      if (e.toString().contains('UNIQUE')) {
-        return AuthResult.failure('Username/email or ID number already registered.');
-      }
-      return AuthResult.failure('User creation failed. Please try again.');
-    }
+    return AuthResult.failure(
+      'Los usuarios se crean en la plataforma web (menú Usuarios o Conductores).',
+    );
   }
 
   Future<AuthResult> login({
@@ -88,31 +95,66 @@ class AuthService {
     required String password,
   }) async {
     try {
-      final user = await DatabaseHelper.instance
-          .getUserByIdentifier(email.toLowerCase().trim());
-      if (user == null) {
-        return AuthResult.failure('Invalid username or password.');
+      final perfil = await ApiClient.instance.iniciarSesion(email, password);
+      final user = AppUser.fromPerfil(perfil);
+      if (_currentUser != null && _currentUser!.id != user.id) {
+        await _detenerServicios();
       }
-      if (user.passwordHash != _hash(password)) {
-        return AuthResult.failure('Invalid username or password.');
-      }
-      _currentUser = user;
-      await _persistSession(user.id!);
+      await _guardarUsuario(user);
       return AuthResult.success(user);
+    } on SinConexionException {
+      return AuthResult.failure(
+        'No hay conexión con el servidor. El primer ingreso necesita internet.',
+      );
+    } on ApiException catch (e) {
+      if (e.statusCode == 401) {
+        return AuthResult.failure('Correo o contraseña incorrectos.');
+      }
+      return AuthResult.failure(e.mensaje);
     } catch (_) {
-      return AuthResult.failure('Login failed. Please try again.');
+      return AuthResult.failure('No se pudo iniciar sesión. Intente de nuevo.');
+    }
+  }
+
+  /// RNF-11: registra en el servidor la aceptación de la política de datos.
+  Future<AuthResult> aceptarTratamientoDatos() async {
+    try {
+      final perfil = await ApiClient.instance.post(
+        '/auth/aceptar-tratamiento-datos/',
+      );
+      final user = AppUser.fromPerfil((perfil as Map).cast<String, dynamic>());
+      await _guardarUsuario(user);
+      return AuthResult.success(user);
+    } on ApiException catch (e) {
+      return AuthResult.failure(e.mensaje);
+    } catch (e) {
+      return AuthResult.failure(e.toString());
     }
   }
 
   Future<void> logout() async {
+    // Antes de salir se intenta enviar lo pendiente; si no hay red, queda
+    // guardado en el teléfono y se envía la próxima vez que este usuario ingrese.
+    try {
+      await SyncService.instance.sincronizar();
+    } catch (_) {}
+    await _detenerServicios();
+    await ApiClient.instance.cerrarSesion();
     _currentUser = null;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_sessionKey);
+    await prefs.remove(_kUsuario);
   }
 
-  Future<void> _persistSession(int userId) async {
+  Future<void> _detenerServicios() async {
+    await RastreoService.instance.detener();
+    await EnvioRepository.instance.detener();
+    await SyncService.instance.detener();
+  }
+
+  Future<void> _guardarUsuario(AppUser user) async {
+    _currentUser = user;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setInt(_sessionKey, userId);
+    await prefs.setString(_kUsuario, jsonEncode(user.toSesion()));
   }
 }
 

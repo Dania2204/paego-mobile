@@ -14,7 +14,43 @@ class AppUser {
     this.createdAt,
     this.syncedAt,
     this.isSynced = false,
+    this.conductorId,
+    this.institucionId,
+    this.aceptoTratamientoDatos = true,
   });
+
+  /// Perfil devuelto por la API de oPAEGo (`/api/auth/token/` o `/api/auth/yo/`).
+  factory AppUser.fromPerfil(Map<String, dynamic> p) {
+    final nombre = (p['nombre'] as String?)?.trim() ?? '';
+    return AppUser(
+      id: p['id'] as int,
+      fullName: nombre.isNotEmpty ? nombre : (p['email'] as String? ?? ''),
+      email: p['email'] as String? ?? '',
+      phone: p['telefono'] as String? ?? '',
+      idNumber: '',
+      role: UserRoleX.fromBackend(p['rol'] as String?),
+      conductorId: p['conductor_id'] as int?,
+      institucionId: p['institucion_id'] as int?,
+      aceptoTratamientoDatos: p['acepto_tratamiento_datos_en'] != null,
+      isSynced: true,
+    );
+  }
+
+  /// Sesión guardada en el teléfono (para abrir la app sin conexión).
+  Map<String, dynamic> toSesion() => {
+    'id': id,
+    'nombre': fullName,
+    'email': email,
+    'telefono': phone,
+    'rol': switch (role) {
+      UserRole.admin || UserRole.superAdmin => 'ADMINISTRADOR',
+      UserRole.rector => 'INSTITUCION',
+      UserRole.driver => 'CONDUCTOR',
+    },
+    'conductor_id': conductorId,
+    'institucion_id': institucionId,
+    'acepto_tratamiento_datos_en': aceptoTratamientoDatos ? 'si' : null,
+  };
 
   final int? id;
   final String fullName;
@@ -28,6 +64,15 @@ class AppUser {
   final DateTime? createdAt;
   final DateTime? syncedAt;
   final bool isSynced;
+
+  /// Id del conductor en el backend (solo rol conductor).
+  final int? conductorId;
+
+  /// Id de la institución en el backend (solo rol institución).
+  final int? institucionId;
+
+  /// RNF-11: aceptó la política de tratamiento de datos (Ley 1581).
+  final bool aceptoTratamientoDatos;
 
   String get initials {
     final parts = fullName.trim().split(' ');
@@ -84,6 +129,7 @@ class AppUser {
     DateTime? createdAt,
     DateTime? syncedAt,
     bool? isSynced,
+    bool? aceptoTratamientoDatos,
   }) =>
       AppUser(
         id: id ?? this.id,
@@ -98,5 +144,9 @@ class AppUser {
         createdAt: createdAt ?? this.createdAt,
         syncedAt: syncedAt ?? this.syncedAt,
         isSynced: isSynced ?? this.isSynced,
+        conductorId: conductorId,
+        institucionId: institucionId,
+        aceptoTratamientoDatos:
+            aceptoTratamientoDatos ?? this.aceptoTratamientoDatos,
       );
 }

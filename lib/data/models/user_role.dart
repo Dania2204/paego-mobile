@@ -21,30 +21,45 @@ extension UserRoleX on UserRole {
     }
   }
 
-  bool get canViewAllReports =>
-      this == UserRole.superAdmin || this == UserRole.admin || this == UserRole.rector;
+  // Los permisos reales los decide la API de oPAEGo (RF-06); estos getters
+  // solo muestran u ocultan opciones en la app. La gestión de usuarios,
+  // instituciones y envíos la hace el administrador en la plataforma web.
 
-  bool get canManagePersonnel =>
-      this == UserRole.superAdmin || this == UserRole.admin || this == UserRole.rector;
+  bool get canViewAllReports =>
+      this == UserRole.superAdmin || this == UserRole.admin;
+
+  bool get canManagePersonnel => false;
 
   bool get canManageUsers => canManagePersonnel;
 
   bool get canDeleteUsers => canManageUsers;
 
-  bool get canCreateOrders =>
-      this == UserRole.superAdmin || this == UserRole.admin;
+  bool get canCreateOrders => false;
 
-  bool get canAddSchoolLocation =>
-      this == UserRole.superAdmin || this == UserRole.admin;
+  bool get canAddSchoolLocation => false;
 
+  /// Conductor: salida, recorrido, llegada (RF-19 a RF-23).
   bool get canDriveRoute => this == UserRole.driver;
+
+  /// Institución educativa: confirma la recepción (RF-24 a RF-28).
+  bool get canConfirmReception => this == UserRole.rector;
 
   bool get canSubmitReport =>
       this == UserRole.rector || this == UserRole.driver;
 
-  List<UserRole> get creatableRoles {
-    if (!canManageUsers) return const [];
-    return const [UserRole.admin, UserRole.rector, UserRole.driver];
+  List<UserRole> get creatableRoles => const [];
+
+  /// Rol del backend (`cuentas.Rol`) → rol de la app.
+  static UserRole fromBackend(String? rol) {
+    switch (rol) {
+      case 'ADMINISTRADOR':
+        return UserRole.admin;
+      case 'INSTITUCION':
+        return UserRole.rector;
+      case 'CONDUCTOR':
+      default:
+        return UserRole.driver;
+    }
   }
 
   static UserRole fromString(String v) =>
