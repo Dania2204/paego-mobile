@@ -87,8 +87,8 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
 ## CI/CD (`.github/`)
 
 - Secreto opcional `ARCGIS_API_KEY` (mapas de ArcGIS en los builds de CI y release).
-- `ci.yml`: `flutter analyze --no-fatal-infos` (errores y warnings bloquean), formato informativo
-  (el código previo no está formateado con `dart format`), `flutter test --coverage`, builds web y
+- `ci.yml`: `flutter analyze` (cualquier aviso, incluso info, bloquea), `dart format
+  --set-exit-if-changed lib test` (bloquea: formatear antes de commitear), `flutter test --coverage`, builds web y
   APK como artefactos. Crea `.env` con `PAEGO_API_URL` (variable de repo opcional).
 - `release.yml`: con un tag `v*` compila el APK (firma debug) y lo publica en un GitHub Release.
 - Dependabot para pub y GitHub Actions.

@@ -37,10 +37,9 @@ jobs:
       - name: Crear .env de CI
         run: echo "PAEGO_API_URL=$PAEGO_API_URL" > .env && echo "ARCGIS_API_KEY=$ARCGIS_API_KEY" >> .env
       - run: flutter pub get
-      - name: Análisis estático (errores y warnings bloquean)
-        run: flutter analyze --no-fatal-infos
-      - name: Formato (informativo)
-        continue-on-error: true
+      - name: Análisis estático (cualquier aviso bloquea)
+        run: flutter analyze
+      - name: Formato
         run: dart format --output=none --set-exit-if-changed lib test
       - name: Pruebas con cobertura
         run: flutter test --coverage --reporter expanded
