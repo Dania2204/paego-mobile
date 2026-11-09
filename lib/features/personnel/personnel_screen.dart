@@ -40,11 +40,13 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
   List<AppUser> get _filtered => _search.isEmpty
       ? _users
       : _users
-          .where((u) =>
-              u.fullName.toLowerCase().contains(_search.toLowerCase()) ||
-              u.email.toLowerCase().contains(_search.toLowerCase()) ||
-              u.role.label.toLowerCase().contains(_search.toLowerCase()))
-          .toList();
+            .where(
+              (u) =>
+                  u.fullName.toLowerCase().contains(_search.toLowerCase()) ||
+                  u.email.toLowerCase().contains(_search.toLowerCase()) ||
+                  u.role.label.toLowerCase().contains(_search.toLowerCase()),
+            )
+            .toList();
 
   @override
   Widget build(BuildContext context) {
@@ -73,10 +75,12 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
                 prefixIcon: const Icon(Icons.search_rounded),
                 filled: true,
                 fillColor: Theme.of(context).brightness == Brightness.dark
-                      ? PaeColors.cardDark
-                      : Colors.white,
-                contentPadding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    ? PaeColors.cardDark
+                    : Colors.white,
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 12,
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                   borderSide: const BorderSide(color: PaeColors.divider),
@@ -87,8 +91,10 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
-                  borderSide:
-                      const BorderSide(color: PaeColors.primary, width: 2),
+                  borderSide: const BorderSide(
+                    color: PaeColors.primary,
+                    width: 2,
+                  ),
                 ),
               ),
             ),
@@ -100,33 +106,36 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
                     child: CircularProgressIndicator(color: PaeColors.primary),
                   )
                 : _filtered.isEmpty
-                    ? Center(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.people_outline,
-                                size: 64, color: PaeColors.inactive),
-                            SizedBox(height: 16),
-                            Text(
-                              S.personnelEmpty,
-                              style: TextStyle(color: PaeColors.textSecondary),
-                            ),
-                          ],
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.people_outline,
+                          size: 64,
+                          color: PaeColors.inactive,
                         ),
-                      )
-                    : RefreshIndicator(
-                        onRefresh: _load,
-                        color: PaeColors.primary,
-                        child: ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          itemCount: _filtered.length,
-                          itemBuilder: (_, i) => _UserCard(
-                            user: _filtered[i],
-                            currentUser: widget.user,
-                            onDelete: () => _confirmDelete(_filtered[i]),
-                          ),
+                        SizedBox(height: 16),
+                        Text(
+                          S.personnelEmpty,
+                          style: TextStyle(color: PaeColors.textSecondary),
                         ),
+                      ],
+                    ),
+                  )
+                : RefreshIndicator(
+                    onRefresh: _load,
+                    color: PaeColors.primary,
+                    child: ListView.builder(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      itemCount: _filtered.length,
+                      itemBuilder: (_, i) => _UserCard(
+                        user: _filtered[i],
+                        currentUser: widget.user,
+                        onDelete: () => _confirmDelete(_filtered[i]),
                       ),
+                    ),
+                  ),
           ),
         ],
       ),
@@ -153,16 +162,16 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
 
   void _confirmDelete(AppUser userToDelete) {
     if (!widget.user.role.canDeleteUsers) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(S.personnelAdminOnly)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(S.personnelAdminOnly)));
       return;
     }
 
     if (userToDelete.id == widget.user.id) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(S.personnelCannotDeleteSelf)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(S.personnelCannotDeleteSelf)));
       return;
     }
 
@@ -177,7 +186,9 @@ class _PersonnelScreenState extends State<PersonnelScreen> {
             fontWeight: FontWeight.w800,
           ),
         ),
-        content: Text('${S.personnelDeleteConfirm}\n\n${userToDelete.fullName}'),
+        content: Text(
+          '${S.personnelDeleteConfirm}\n\n${userToDelete.fullName}',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -268,12 +279,16 @@ class _UserCard extends StatelessWidget {
                     fontSize: 12,
                   ),
                 ),
-                if (user.institution != null && user.institution!.isNotEmpty) ...[
+                if (user.institution != null &&
+                    user.institution!.isNotEmpty) ...[
                   const SizedBox(height: 2),
                   Row(
                     children: [
-                      const Icon(Icons.school_outlined,
-                          size: 11, color: PaeColors.textSecondary),
+                      const Icon(
+                        Icons.school_outlined,
+                        size: 11,
+                        color: PaeColors.textSecondary,
+                      ),
                       const SizedBox(width: 4),
                       Text(
                         user.institution!,
@@ -435,11 +450,7 @@ class _CreateUserSheetState extends State<_CreateUserSheet> {
                 Icons.person_outline_rounded,
               ),
               SizedBox(height: 14),
-              _field(
-                _loginCtrl,
-                S.loginEmail,
-                Icons.alternate_email_rounded,
-              ),
+              _field(_loginCtrl, S.loginEmail, Icons.alternate_email_rounded),
               SizedBox(height: 14),
               _field(
                 _phoneCtrl,
@@ -448,11 +459,7 @@ class _CreateUserSheetState extends State<_CreateUserSheet> {
                 type: TextInputType.phone,
               ),
               SizedBox(height: 14),
-              _field(
-                _idCtrl,
-                S.registerIdNumber,
-                Icons.badge_outlined,
-              ),
+              _field(_idCtrl, S.registerIdNumber, Icons.badge_outlined),
               SizedBox(height: 14),
               DropdownButtonFormField<UserRole>(
                 initialValue: _selectedRole,
@@ -567,10 +574,7 @@ class _CreateUserSheetState extends State<_CreateUserSheet> {
     return TextFormField(
       controller: controller,
       keyboardType: type,
-      decoration: InputDecoration(
-        labelText: label,
-        prefixIcon: Icon(icon),
-      ),
+      decoration: InputDecoration(labelText: label, prefixIcon: Icon(icon)),
       validator: (value) {
         if (!required) return null;
         if (value == null || value.trim().isEmpty) return S.required;

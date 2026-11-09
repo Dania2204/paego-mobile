@@ -14,9 +14,10 @@ extension FoodConditionX on FoodCondition {
     }
   }
 
-  static FoodCondition fromString(String v) =>
-      FoodCondition.values.firstWhere((e) => e.name == v,
-          orElse: () => FoodCondition.good);
+  static FoodCondition fromString(String v) => FoodCondition.values.firstWhere(
+    (e) => e.name == v,
+    orElse: () => FoodCondition.good,
+  );
 }
 
 class DeliveryReport {

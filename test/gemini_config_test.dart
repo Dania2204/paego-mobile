@@ -4,7 +4,9 @@ import 'package:opaego/core/config/gemini_config.dart';
 
 void main() {
   test('lee la clave de GEMINI_API_KEY', () {
-    dotenv.testLoad(fileInput: 'GEMINI_API_KEY= clave-123 \nGEMINI_MODEL=gemini-x');
+    dotenv.testLoad(
+      fileInput: 'GEMINI_API_KEY= clave-123 \nGEMINI_MODEL=gemini-x',
+    );
     expect(GeminiConfig.clave, 'clave-123');
     expect(GeminiConfig.modelo, 'gemini-x');
   });

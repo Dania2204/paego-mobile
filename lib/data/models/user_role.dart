@@ -5,19 +5,27 @@ enum UserRole { superAdmin, admin, rector, driver }
 extension UserRoleX on UserRole {
   String get label {
     switch (this) {
-      case UserRole.superAdmin: return S.roleSuperAdmin;
-      case UserRole.admin:      return S.roleAdmin;
-      case UserRole.rector:     return S.roleRector;
-      case UserRole.driver:     return S.roleDriver;
+      case UserRole.superAdmin:
+        return S.roleSuperAdmin;
+      case UserRole.admin:
+        return S.roleAdmin;
+      case UserRole.rector:
+        return S.roleRector;
+      case UserRole.driver:
+        return S.roleDriver;
     }
   }
 
   String get description {
     switch (this) {
-      case UserRole.superAdmin: return S.roleDescSuperAdmin;
-      case UserRole.admin:      return S.roleDescAdmin;
-      case UserRole.rector:     return S.roleDescRector;
-      case UserRole.driver:     return S.roleDescDriver;
+      case UserRole.superAdmin:
+        return S.roleDescSuperAdmin;
+      case UserRole.admin:
+        return S.roleDescAdmin;
+      case UserRole.rector:
+        return S.roleDescRector;
+      case UserRole.driver:
+        return S.roleDescDriver;
     }
   }
 
@@ -62,7 +70,8 @@ extension UserRoleX on UserRole {
     }
   }
 
-  static UserRole fromString(String v) =>
-      UserRole.values.firstWhere((e) => e.name == v,
-          orElse: () => UserRole.driver);
+  static UserRole fromString(String v) => UserRole.values.firstWhere(
+    (e) => e.name == v,
+    orElse: () => UserRole.driver,
+  );
 }

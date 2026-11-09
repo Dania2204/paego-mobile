@@ -5,16 +5,19 @@ enum DeliveryStatus { pending, assigned, enRoute, delivered }
 extension DeliveryStatusX on DeliveryStatus {
   String get label {
     switch (this) {
-      case DeliveryStatus.pending:   return 'Pending';
-      case DeliveryStatus.assigned:  return 'Assigned';
-      case DeliveryStatus.enRoute:   return 'En route';
-      case DeliveryStatus.delivered: return 'Delivered';
+      case DeliveryStatus.pending:
+        return 'Pending';
+      case DeliveryStatus.assigned:
+        return 'Assigned';
+      case DeliveryStatus.enRoute:
+        return 'En route';
+      case DeliveryStatus.delivered:
+        return 'Delivered';
     }
   }
 
-  static DeliveryStatus fromString(String v) =>
-      DeliveryStatus.values.firstWhere((e) => e.name == v,
-          orElse: () => DeliveryStatus.pending);
+  static DeliveryStatus fromString(String v) => DeliveryStatus.values
+      .firstWhere((e) => e.name == v, orElse: () => DeliveryStatus.pending);
 }
 
 class SchoolLocation {

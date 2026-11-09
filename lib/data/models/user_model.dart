@@ -130,23 +130,22 @@ class AppUser {
     DateTime? syncedAt,
     bool? isSynced,
     bool? aceptoTratamientoDatos,
-  }) =>
-      AppUser(
-        id: id ?? this.id,
-        fullName: fullName ?? this.fullName,
-        email: email ?? this.email,
-        phone: phone ?? this.phone,
-        idNumber: idNumber ?? this.idNumber,
-        role: role ?? this.role,
-        institution: institution ?? this.institution,
-        photoPath: photoPath ?? this.photoPath,
-        passwordHash: passwordHash ?? this.passwordHash,
-        createdAt: createdAt ?? this.createdAt,
-        syncedAt: syncedAt ?? this.syncedAt,
-        isSynced: isSynced ?? this.isSynced,
-        conductorId: conductorId,
-        institucionId: institucionId,
-        aceptoTratamientoDatos:
-            aceptoTratamientoDatos ?? this.aceptoTratamientoDatos,
-      );
+  }) => AppUser(
+    id: id ?? this.id,
+    fullName: fullName ?? this.fullName,
+    email: email ?? this.email,
+    phone: phone ?? this.phone,
+    idNumber: idNumber ?? this.idNumber,
+    role: role ?? this.role,
+    institution: institution ?? this.institution,
+    photoPath: photoPath ?? this.photoPath,
+    passwordHash: passwordHash ?? this.passwordHash,
+    createdAt: createdAt ?? this.createdAt,
+    syncedAt: syncedAt ?? this.syncedAt,
+    isSynced: isSynced ?? this.isSynced,
+    conductorId: conductorId,
+    institucionId: institucionId,
+    aceptoTratamientoDatos:
+        aceptoTratamientoDatos ?? this.aceptoTratamientoDatos,
+  );
 }

@@ -212,7 +212,9 @@ class StatCard extends StatelessWidget {
           color: surface,
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
-            color: isDark ? Colors.white.withValues(alpha: 0.08) : PaeColors.divider,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : PaeColors.divider,
           ),
           boxShadow: [
             BoxShadow(

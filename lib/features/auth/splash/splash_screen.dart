@@ -22,11 +22,17 @@ class _SplashScreenState extends State<SplashScreen>
   void initState() {
     super.initState();
     _ctrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 900));
-    _scale = Tween<double>(begin: 0.7, end: 1.0)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.elasticOut));
-    _fade = Tween<double>(begin: 0.0, end: 1.0)
-        .animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeIn));
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+    _scale = Tween<double>(
+      begin: 0.7,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.elasticOut));
+    _fade = Tween<double>(
+      begin: 0.0,
+      end: 1.0,
+    ).animate(CurvedAnimation(parent: _ctrl, curve: Curves.easeIn));
     _ctrl.forward();
     _bootstrap();
   }
@@ -73,29 +79,38 @@ class _SplashScreenState extends State<SplashScreen>
                       color: Colors.white.withValues(alpha: 0.15),
                       shape: BoxShape.circle,
                       border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.4), width: 2),
+                        color: Colors.white.withValues(alpha: 0.4),
+                        width: 2,
+                      ),
                     ),
-                    child: const Icon(Icons.local_shipping_rounded,
-                        size: 48, color: Colors.white),
+                    child: const Icon(
+                      Icons.local_shipping_rounded,
+                      size: 48,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(height: 24),
-                  Text(S.appName,
-                      style: const TextStyle(
-                        fontFamily: PaeTypography.fontDisplay,
-                        fontSize: 40,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: -1,
-                      )),
+                  Text(
+                    S.appName,
+                    style: const TextStyle(
+                      fontFamily: PaeTypography.fontDisplay,
+                      fontSize: 40,
+                      fontWeight: FontWeight.w900,
+                      color: Colors.white,
+                      letterSpacing: -1,
+                    ),
+                  ),
                   const SizedBox(height: 6),
-                  Text(S.appTagline,
-                      style: TextStyle(
-                        fontFamily: PaeTypography.fontBody,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                        color: Colors.white.withValues(alpha: 0.8),
-                        letterSpacing: 0.5,
-                      )),
+                  Text(
+                    S.appTagline,
+                    style: TextStyle(
+                      fontFamily: PaeTypography.fontBody,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.8),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
                   const SizedBox(height: 48),
                   SizedBox(
                     width: 28,
@@ -103,7 +118,8 @@ class _SplashScreenState extends State<SplashScreen>
                     child: CircularProgressIndicator(
                       strokeWidth: 2.5,
                       valueColor: AlwaysStoppedAnimation<Color>(
-                          Colors.white.withValues(alpha: 0.7)),
+                        Colors.white.withValues(alpha: 0.7),
+                      ),
                     ),
                   ),
                 ],

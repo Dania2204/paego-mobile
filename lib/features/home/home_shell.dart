@@ -42,7 +42,9 @@ class _HomeShellState extends State<HomeShell> {
     // Cola sin conexión, envíos y GPS (posición en vivo del conductor).
     AuthService.instance.iniciarServicios();
     if (!widget.user.aceptoTratamientoDatos) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _pedirAceptacionDatos());
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _pedirAceptacionDatos(),
+      );
     }
   }
 
@@ -53,18 +55,25 @@ class _HomeShellState extends State<HomeShell> {
       context: context,
       barrierDismissible: false,
       builder: (ctx) => AlertDialog(
-        title: Text(S.text('datos.titulo', 'Tratamiento de datos personales',
-            'Personal data processing')),
-        content: Text(S.text(
-          'datos.texto',
-          'PAEGo registra su ubicación durante los recorridos, las novedades y las '
-              'evidencias de entrega para el seguimiento del Programa de Alimentación '
-              'Escolar, conforme a la Ley 1581 de 2012. ¿Acepta la política de '
-              'tratamiento de datos?',
-          'PAEGo records your location during routes, incidents and delivery '
-              'evidence to monitor the School Feeding Programme, under Colombian '
-              'Law 1581 of 2012. Do you accept the data processing policy?',
-        )),
+        title: Text(
+          S.text(
+            'datos.titulo',
+            'Tratamiento de datos personales',
+            'Personal data processing',
+          ),
+        ),
+        content: Text(
+          S.text(
+            'datos.texto',
+            'PAEGo registra su ubicación durante los recorridos, las novedades y las '
+                'evidencias de entrega para el seguimiento del Programa de Alimentación '
+                'Escolar, conforme a la Ley 1581 de 2012. ¿Acepta la política de '
+                'tratamiento de datos?',
+            'PAEGo records your location during routes, incidents and delivery '
+                'evidence to monitor the School Feeding Programme, under Colombian '
+                'Law 1581 of 2012. Do you accept the data processing policy?',
+          ),
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
@@ -86,7 +95,9 @@ class _HomeShellState extends State<HomeShell> {
     }
     final r = await AuthService.instance.aceptarTratamientoDatos();
     if (!r.isSuccess && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(r.error!)));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(r.error!)));
     }
   }
 
@@ -171,10 +182,10 @@ class _HomeShellState extends State<HomeShell> {
           currentIndex: _currentIndex,
           onTap: (i) => setState(() => _currentIndex = i),
           items: tabs
-              .map((t) => BottomNavigationBarItem(
-                    icon: Icon(t.icon),
-                    label: t.label,
-                  ))
+              .map(
+                (t) =>
+                    BottomNavigationBarItem(icon: Icon(t.icon), label: t.label),
+              )
               .toList(),
           elevation: 0,
           backgroundColor: Colors.transparent,
@@ -212,35 +223,58 @@ class BarraSincronizacion extends StatelessWidget {
         Widget? accion;
 
         if (e.sesionVencida) {
-          texto = S.text('sync.sesion_vencida',
-              'La sesión venció. Ingrese de nuevo para enviar los datos.',
-              'Session expired. Sign in again to upload your data.');
+          texto = S.text(
+            'sync.sesion_vencida',
+            'La sesión venció. Ingrese de nuevo para enviar los datos.',
+            'Session expired. Sign in again to upload your data.',
+          );
           color = PaeColors.error;
           icono = Icons.lock_clock_rounded;
           accion = TextButton(
             onPressed: () => Navigator.pushNamedAndRemoveUntil(
-                context, AppRouter.login, (_) => false),
-            child: Text(S.text('sync.ingresar', 'Ingresar', 'Sign in'),
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+              context,
+              AppRouter.login,
+              (_) => false,
+            ),
+            child: Text(
+              S.text('sync.ingresar', 'Ingresar', 'Sign in'),
+              style: const TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
           );
         } else if (!e.enLinea) {
           texto = e.pendientes > 0
-              ? S.text('sync.offline_pendientes',
+              ? S
+                    .text(
+                      'sync.offline_pendientes',
                       'Sin conexión · {n} cambios guardados en el teléfono',
-                      'Offline · {n} changes saved on the phone')
-                  .replaceAll('{n}', '${e.pendientes}')
-              : S.text('sync.offline', 'Sin conexión · los cambios se guardan en el teléfono',
-                  'Offline · changes are saved on the phone');
+                      'Offline · {n} changes saved on the phone',
+                    )
+                    .replaceAll('{n}', '${e.pendientes}')
+              : S.text(
+                  'sync.offline',
+                  'Sin conexión · los cambios se guardan en el teléfono',
+                  'Offline · changes are saved on the phone',
+                );
           color = PaeColors.warning;
           icono = Icons.wifi_off_rounded;
         } else if (e.pendientes > 0) {
-          texto = S.text('sync.enviando', 'Enviando {n} cambios a la plataforma…',
-                  'Sending {n} changes to the platform…')
+          texto = S
+              .text(
+                'sync.enviando',
+                'Enviando {n} cambios a la plataforma…',
+                'Sending {n} changes to the platform…',
+              )
               .replaceAll('{n}', '${e.pendientes}');
         } else if (e.rechazadas > 0) {
-          texto = S.text('sync.rechazadas',
-                  '{n} cambios fueron rechazados por el servidor (ver Informes)',
-                  '{n} changes were rejected by the server (see Reports)')
+          texto = S
+              .text(
+                'sync.rechazadas',
+                '{n} cambios fueron rechazados por el servidor (ver Informes)',
+                '{n} changes were rejected by the server (see Reports)',
+              )
               .replaceAll('{n}', '${e.rechazadas}');
           color = PaeColors.error;
           icono = Icons.error_outline_rounded;
@@ -253,7 +287,10 @@ class BarraSincronizacion extends StatelessWidget {
               : Material(
                   color: color,
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
                     child: Row(
                       children: [
                         Icon(icono, color: Colors.white, size: 16),

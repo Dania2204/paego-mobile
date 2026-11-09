@@ -72,7 +72,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             initials: widget.user.initials,
                             photoPath: widget.user.photoPath,
                             radius: 44,
-                            backgroundColor: Colors.white.withValues(alpha: 0.25),
+                            backgroundColor: Colors.white.withValues(
+                              alpha: 0.25,
+                            ),
                           ),
                           Positioned(
                             bottom: 0,
@@ -357,8 +359,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: PaeColors.error.withValues(alpha: 
-                          isDark ? 0.15 : 0.07,
+                        color: PaeColors.error.withValues(
+                          alpha: isDark ? 0.15 : 0.07,
                         ),
                         borderRadius: BorderRadius.circular(16),
                         border: Border.all(

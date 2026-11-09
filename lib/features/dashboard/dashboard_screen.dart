@@ -47,12 +47,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
       _pending = envios.where((e) => e.estado == EstadoEnvio.asignado).length;
       _enRoute = envios.where((e) => e.estado == EstadoEnvio.enTransito).length;
       _delivered = envios
-          .where((e) => e.estado == EstadoEnvio.entregado || e.estado == EstadoEnvio.conNovedad)
+          .where(
+            (e) =>
+                e.estado == EstadoEnvio.entregado ||
+                e.estado == EstadoEnvio.conNovedad,
+          )
           .length;
       // Primero los activos, luego los más recientes.
-      final ordenados = [...envios]..sort((a, b) {
-          if (a.estado.esActivo != b.estado.esActivo) return a.estado.esActivo ? -1 : 1;
-          return (b.programadoPara ?? DateTime(0)).compareTo(a.programadoPara ?? DateTime(0));
+      final ordenados = [...envios]
+        ..sort((a, b) {
+          if (a.estado.esActivo != b.estado.esActivo)
+            return a.estado.esActivo ? -1 : 1;
+          return (b.programadoPara ?? DateTime(0)).compareTo(
+            a.programadoPara ?? DateTime(0),
+          );
         });
       _recent = ordenados.take(5).toList();
       if (envios.isNotEmpty) _loading = false;
@@ -66,7 +74,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
       // Se muestran los datos guardados en el teléfono.
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
     if (mounted) setState(() => _loading = false);
@@ -117,8 +127,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                     initials: user.initials,
                                     photoPath: user.photoPath,
                                     radius: 24,
-                                    backgroundColor: Colors.white.withValues(alpha: 
-                                      0.25,
+                                    backgroundColor: Colors.white.withValues(
+                                      alpha: 0.25,
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -129,7 +139,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       Text(
                                         '$greeting,',
                                         style: TextStyle(
-                                          color: Colors.white.withValues(alpha: 0.8),
+                                          color: Colors.white.withValues(
+                                            alpha: 0.8,
+                                          ),
                                           fontSize: 13,
                                           fontFamily: PaeTypography.fontBody,
                                         ),
@@ -231,13 +243,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         color: PaeColors.statusPending,
                       ),
                       StatCard(
-                        label: S.text('envio.estado.en_transito', 'En tránsito', 'In transit'),
+                        label: S.text(
+                          'envio.estado.en_transito',
+                          'En tránsito',
+                          'In transit',
+                        ),
                         value: '$_enRoute',
                         icon: Icons.directions_car_rounded,
                         color: PaeColors.statusEnRoute,
                       ),
                       StatCard(
-                        label: S.text('envio.estado.entregados', 'Entregados', 'Delivered'),
+                        label: S.text(
+                          'envio.estado.entregados',
+                          'Entregados',
+                          'Delivered',
+                        ),
                         value: '$_delivered',
                         icon: Icons.check_circle_rounded,
                         color: PaeColors.statusDelivered,

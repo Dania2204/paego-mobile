@@ -29,9 +29,13 @@ class _LoginScreenState extends State<LoginScreen>
   void initState() {
     super.initState();
     _animCtrl = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 700));
-    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero)
-        .animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
+      vsync: this,
+      duration: const Duration(milliseconds: 700),
+    );
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.15),
+      end: Offset.zero,
+    ).animate(CurvedAnimation(parent: _animCtrl, curve: Curves.easeOutCubic));
     _fadeAnim = CurvedAnimation(parent: _animCtrl, curve: Curves.easeIn);
     _animCtrl.forward();
   }
@@ -46,7 +50,10 @@ class _LoginScreenState extends State<LoginScreen>
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate()) return;
-    setState(() { _loading = true; _errorMsg = null; });
+    setState(() {
+      _loading = true;
+      _errorMsg = null;
+    });
     final result = await AuthService.instance.login(
       email: _emailCtrl.text,
       password: _passCtrl.text,
@@ -54,8 +61,11 @@ class _LoginScreenState extends State<LoginScreen>
     if (!mounted) return;
     setState(() => _loading = false);
     if (result.isSuccess) {
-      Navigator.pushReplacementNamed(context, AppRouter.home,
-          arguments: result.user);
+      Navigator.pushReplacementNamed(
+        context,
+        AppRouter.home,
+        arguments: result.user,
+      );
     } else {
       setState(() => _errorMsg = result.error);
     }
@@ -68,7 +78,9 @@ class _LoginScreenState extends State<LoginScreen>
         children: [
           // ── Gradient hero top ──────────────────────────────────────────
           Positioned(
-            top: 0, left: 0, right: 0,
+            top: 0,
+            left: 0,
+            right: 0,
             height: MediaQuery.of(context).size.height * 0.40,
             child: Container(
               decoration: const BoxDecoration(
@@ -90,25 +102,32 @@ class _LoginScreenState extends State<LoginScreen>
                           color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(16),
                         ),
-                        child: const Icon(Icons.local_shipping_rounded,
-                            color: Colors.white, size: 32),
+                        child: const Icon(
+                          Icons.local_shipping_rounded,
+                          color: Colors.white,
+                          size: 32,
+                        ),
                       ),
                       const Spacer(),
-                      Text(S.appName,
-                          style: const TextStyle(
-                            fontFamily: PaeTypography.fontDisplay,
-                            fontSize: 36,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: -1,
-                          )),
-                      Text(S.appTagline,
-                          style: TextStyle(
-                            fontFamily: PaeTypography.fontBody,
-                            color: Colors.white.withValues(alpha: 0.8),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                          )),
+                      Text(
+                        S.appName,
+                        style: const TextStyle(
+                          fontFamily: PaeTypography.fontDisplay,
+                          fontSize: 36,
+                          fontWeight: FontWeight.w900,
+                          color: Colors.white,
+                          letterSpacing: -1,
+                        ),
+                      ),
+                      Text(
+                        S.appTagline,
+                        style: TextStyle(
+                          fontFamily: PaeTypography.fontBody,
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
                       const SizedBox(height: 16),
                     ],
                   ),
@@ -146,14 +165,16 @@ class _LoginScreenState extends State<LoginScreen>
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(S.loginTitle,
-                              style: Theme.of(context).textTheme.displaySmall),
+                          Text(
+                            S.loginTitle,
+                            style: Theme.of(context).textTheme.displaySmall,
+                          ),
                           SizedBox(height: 4),
-                          Text(S.loginSubtitle,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .bodyMedium
-                                  ?.copyWith(color: PaeColors.textSecondary)),
+                          Text(
+                            S.loginSubtitle,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(color: PaeColors.textSecondary),
+                          ),
                           const SizedBox(height: 28),
 
                           // Email
@@ -163,10 +184,13 @@ class _LoginScreenState extends State<LoginScreen>
                             textInputAction: TextInputAction.next,
                             decoration: InputDecoration(
                               labelText: S.loginEmail,
-                              prefixIcon: const Icon(Icons.alternate_email_rounded),
+                              prefixIcon: const Icon(
+                                Icons.alternate_email_rounded,
+                              ),
                             ),
                             validator: (v) {
-                              if (v == null || v.trim().isEmpty) return S.loginRequired;
+                              if (v == null || v.trim().isEmpty)
+                                return S.loginRequired;
                               return null;
                             },
                           ),
@@ -182,9 +206,11 @@ class _LoginScreenState extends State<LoginScreen>
                               labelText: S.loginPassword,
                               prefixIcon: const Icon(Icons.lock_outline),
                               suffixIcon: IconButton(
-                                icon: Icon(_obscure
-                                    ? Icons.visibility_off_outlined
-                                    : Icons.visibility_outlined),
+                                icon: Icon(
+                                  _obscure
+                                      ? Icons.visibility_off_outlined
+                                      : Icons.visibility_outlined,
+                                ),
                                 onPressed: () =>
                                     setState(() => _obscure = !_obscure),
                                 color: PaeColors.textSecondary,
@@ -199,21 +225,29 @@ class _LoginScreenState extends State<LoginScreen>
                             const SizedBox(height: 12),
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 14, vertical: 10),
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
                               decoration: BoxDecoration(
                                 color: PaeColors.error.withValues(alpha: 0.08),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Row(
                                 children: [
-                                  const Icon(Icons.error_outline,
-                                      color: PaeColors.error, size: 18),
+                                  const Icon(
+                                    Icons.error_outline,
+                                    color: PaeColors.error,
+                                    size: 18,
+                                  ),
                                   const SizedBox(width: 8),
                                   Expanded(
-                                    child: Text(_errorMsg!,
-                                        style: const TextStyle(
-                                            color: PaeColors.error,
-                                            fontSize: 13)),
+                                    child: Text(
+                                      _errorMsg!,
+                                      style: const TextStyle(
+                                        color: PaeColors.error,
+                                        fontSize: 13,
+                                      ),
+                                    ),
                                   ),
                                 ],
                               ),
@@ -234,7 +268,9 @@ class _LoginScreenState extends State<LoginScreen>
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.symmetric(
-                                horizontal: 14, vertical: 12),
+                              horizontal: 14,
+                              vertical: 12,
+                            ),
                             decoration: BoxDecoration(
                               color: PaeColors.bgLight,
                               borderRadius: BorderRadius.circular(14),

@@ -76,92 +76,95 @@ class PaeTypography {
   static const fontBody = 'Nunito';
 
   // Use GoogleFonts for reliable Nunito loading (no pubspec font assets needed)
-  static TextStyle display(TextStyle base) => GoogleFonts.nunito(textStyle: base);
+  static TextStyle display(TextStyle base) =>
+      GoogleFonts.nunito(textStyle: base);
   static TextStyle body(TextStyle base) => GoogleFonts.nunito(textStyle: base);
 
-  static TextTheme get textTheme => GoogleFonts.nunitoTextTheme(const TextTheme(
-    displayLarge: TextStyle(
-      fontFamily: fontDisplay,
-      fontSize: 32,
-      fontWeight: FontWeight.w800,
-      letterSpacing: -0.5,
-      color: PaeColors.textPrimary,
+  static TextTheme get textTheme => GoogleFonts.nunitoTextTheme(
+    const TextTheme(
+      displayLarge: TextStyle(
+        fontFamily: fontDisplay,
+        fontSize: 32,
+        fontWeight: FontWeight.w800,
+        letterSpacing: -0.5,
+        color: PaeColors.textPrimary,
+      ),
+      displayMedium: TextStyle(
+        fontFamily: fontDisplay,
+        fontSize: 26,
+        fontWeight: FontWeight.w700,
+        letterSpacing: -0.3,
+        color: PaeColors.textPrimary,
+      ),
+      displaySmall: TextStyle(
+        fontFamily: fontDisplay,
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+        color: PaeColors.textPrimary,
+      ),
+      headlineMedium: TextStyle(
+        fontFamily: fontDisplay,
+        fontSize: 18,
+        fontWeight: FontWeight.w700,
+        color: PaeColors.textPrimary,
+      ),
+      headlineSmall: TextStyle(
+        fontFamily: fontDisplay,
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: PaeColors.textPrimary,
+      ),
+      titleLarge: TextStyle(
+        fontFamily: fontBody,
+        fontSize: 16,
+        fontWeight: FontWeight.w600,
+        color: PaeColors.textPrimary,
+      ),
+      titleMedium: TextStyle(
+        fontFamily: fontBody,
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: PaeColors.textPrimary,
+      ),
+      titleSmall: TextStyle(
+        fontFamily: fontBody,
+        fontSize: 12,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.4,
+        color: PaeColors.textSecondary,
+      ),
+      bodyLarge: TextStyle(
+        fontFamily: fontBody,
+        fontSize: 16,
+        fontWeight: FontWeight.w400,
+        color: PaeColors.textPrimary,
+      ),
+      bodyMedium: TextStyle(
+        fontFamily: fontBody,
+        fontSize: 14,
+        fontWeight: FontWeight.w400,
+        color: PaeColors.textPrimary,
+      ),
+      bodySmall: TextStyle(
+        fontFamily: fontBody,
+        fontSize: 12,
+        fontWeight: FontWeight.w400,
+        color: PaeColors.textSecondary,
+      ),
+      labelLarge: TextStyle(
+        fontFamily: fontBody,
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.5,
+      ),
+      labelSmall: TextStyle(
+        fontFamily: fontBody,
+        fontSize: 10,
+        fontWeight: FontWeight.w500,
+        letterSpacing: 0.8,
+      ),
     ),
-    displayMedium: TextStyle(
-      fontFamily: fontDisplay,
-      fontSize: 26,
-      fontWeight: FontWeight.w700,
-      letterSpacing: -0.3,
-      color: PaeColors.textPrimary,
-    ),
-    displaySmall: TextStyle(
-      fontFamily: fontDisplay,
-      fontSize: 22,
-      fontWeight: FontWeight.w700,
-      color: PaeColors.textPrimary,
-    ),
-    headlineMedium: TextStyle(
-      fontFamily: fontDisplay,
-      fontSize: 18,
-      fontWeight: FontWeight.w700,
-      color: PaeColors.textPrimary,
-    ),
-    headlineSmall: TextStyle(
-      fontFamily: fontDisplay,
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-      color: PaeColors.textPrimary,
-    ),
-    titleLarge: TextStyle(
-      fontFamily: fontBody,
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-      color: PaeColors.textPrimary,
-    ),
-    titleMedium: TextStyle(
-      fontFamily: fontBody,
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      color: PaeColors.textPrimary,
-    ),
-    titleSmall: TextStyle(
-      fontFamily: fontBody,
-      fontSize: 12,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0.4,
-      color: PaeColors.textSecondary,
-    ),
-    bodyLarge: TextStyle(
-      fontFamily: fontBody,
-      fontSize: 16,
-      fontWeight: FontWeight.w400,
-      color: PaeColors.textPrimary,
-    ),
-    bodyMedium: TextStyle(
-      fontFamily: fontBody,
-      fontSize: 14,
-      fontWeight: FontWeight.w400,
-      color: PaeColors.textPrimary,
-    ),
-    bodySmall: TextStyle(
-      fontFamily: fontBody,
-      fontSize: 12,
-      fontWeight: FontWeight.w400,
-      color: PaeColors.textSecondary,
-    ),
-    labelLarge: TextStyle(
-      fontFamily: fontBody,
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      letterSpacing: 0.5,
-    ),
-    labelSmall: TextStyle(
-      fontFamily: fontBody,
-      fontSize: 10,
-      fontWeight: FontWeight.w500,
-      letterSpacing: 0.8,
-    ),
-  ));
+  );
 }
 
 // ── Theme Builders ────────────────────────────────────────────────────────────
@@ -343,11 +346,16 @@ ThemeData buildDarkTheme() {
       contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: PaeColors.primaryLight.withValues(alpha: 0.3)),
+        borderSide: BorderSide(
+          color: PaeColors.primaryLight.withValues(alpha: 0.3),
+        ),
       ),
       enabledBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),
-        borderSide: BorderSide(color: PaeColors.primaryLight.withValues(alpha: 0.3), width: 1.5),
+        borderSide: BorderSide(
+          color: PaeColors.primaryLight.withValues(alpha: 0.3),
+          width: 1.5,
+        ),
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(14),

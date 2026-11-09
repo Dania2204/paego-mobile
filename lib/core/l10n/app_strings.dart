@@ -282,8 +282,7 @@ abstract class S {
   // ── Roles ─────────────────────────────────────────────────────────────────
   static String get roleSuperAdmin => _t('Super Admin', 'Super Admin');
   static String get roleAdmin => _t('Admin', 'Admin');
-  static String get roleRector =>
-      _t('Institución educativa', 'School');
+  static String get roleRector => _t('Institución educativa', 'School');
   static String get roleDriver => _t('Conductor', 'Driver');
 
   static String get roleDescSuperAdmin => _t(

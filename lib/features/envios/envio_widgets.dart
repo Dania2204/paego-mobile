@@ -56,7 +56,9 @@ class EnvioTile extends StatelessWidget {
           color: isDark ? PaeColors.cardDark : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? Colors.white.withValues(alpha: 0.08) : PaeColors.divider,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : PaeColors.divider,
           ),
         ),
         child: Row(

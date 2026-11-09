@@ -149,15 +149,10 @@ class _NutritionScreenState extends State<NutritionScreen>
     // Build context summary of today's food
     final foodContext = _entries.isEmpty
         ? 'No hay alimentos registrados hoy.'
-        : 'Alimentos registrados hoy:\n${_entries
-                  .map(
-                    (e) =>
-                        '- ${e.name} (${e.portion}) — ${e.calories.toStringAsFixed(0)} kcal, '
-                        '${e.protein.toStringAsFixed(1)}g proteína, '
-                        '${e.carbs.toStringAsFixed(1)}g carbohidratos, '
-                        '${e.fat.toStringAsFixed(1)}g grasa [${e.mealType.label}]',
-                  )
-                  .join('\n')}\n\nTotales del día: ${_totalCalories.toStringAsFixed(0)} kcal | ${_totalProtein.toStringAsFixed(1)}g proteína | ${_totalCarbs.toStringAsFixed(1)}g carbohidratos | ${_totalFat.toStringAsFixed(1)}g grasa';
+        : 'Alimentos registrados hoy:\n${_entries.map((e) => '- ${e.name} (${e.portion}) — ${e.calories.toStringAsFixed(0)} kcal, '
+              '${e.protein.toStringAsFixed(1)}g proteína, '
+              '${e.carbs.toStringAsFixed(1)}g carbohidratos, '
+              '${e.fat.toStringAsFixed(1)}g grasa [${e.mealType.label}]').join('\n')}\n\nTotales del día: ${_totalCalories.toStringAsFixed(0)} kcal | ${_totalProtein.toStringAsFixed(1)}g proteína | ${_totalCarbs.toStringAsFixed(1)}g carbohidratos | ${_totalFat.toStringAsFixed(1)}g grasa';
 
     final systemPrompt =
         '''
@@ -718,7 +713,10 @@ class _MacroChip extends StatelessWidget {
         const SizedBox(height: 2),
         Text(
           label,
-          style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 11),
+          style: TextStyle(
+            color: Colors.white.withValues(alpha: 0.8),
+            fontSize: 11,
+          ),
         ),
       ],
     );
@@ -759,7 +757,9 @@ class _FoodEntryTile extends StatelessWidget {
           color: surface,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isDark ? Colors.white.withValues(alpha: 0.08) : PaeColors.divider,
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : PaeColors.divider,
           ),
           boxShadow: [
             BoxShadow(
