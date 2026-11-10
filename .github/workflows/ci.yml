@@ -139,7 +139,7 @@ jobs:
           repository: Dania2204/oPAEGo
           ref: ${{ vars.OPAEGO_REF || 'main' }}
           path: oPAEGo
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v7
         with:
           python-version: "3.13"
           cache: pip
