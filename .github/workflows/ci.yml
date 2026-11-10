@@ -114,8 +114,7 @@ jobs:
 
   # Prueba de punta a punta: la capa de datos de la app (login, cola sin
   # conexión, envíos) contra el backend real de oPAEGo con PostgreSQL.
-  # Rama del backend: variable de repositorio OPAEGO_REF. Por defecto la rama de
-  # integración del backend; pasar a main cuando se fusione en oPAEGo.
+  # Rama del backend: variable de repositorio OPAEGO_REF (por defecto main).
   e2e:
     name: Punta a punta con el backend
     runs-on: ubuntu-latest
@@ -138,7 +137,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           repository: Dania2204/oPAEGo
-          ref: ${{ vars.OPAEGO_REF || 'feature/plataforma-web' }}
+          ref: ${{ vars.OPAEGO_REF || 'main' }}
           path: oPAEGo
       - uses: actions/setup-python@v5
         with:
