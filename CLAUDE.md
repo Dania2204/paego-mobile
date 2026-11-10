@@ -21,6 +21,7 @@ flutter run -d chrome            # web: sqflite vía sqflite_common_ffi_web
 flutter analyze                  # lints de flutter_lints
 flutter test                     # modelos, cliente JWT y cola sin conexión
 flutter test test/api_y_sincronizacion_test.dart --plain-name "sin red"
+PAEGO_E2E_URL=http://127.0.0.1:8000 flutter test test/e2e   # punta a punta con backend real (seed_demo)
 dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_logo.png
 ```
 
@@ -106,6 +107,10 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
   con un archivo generado que importa todo `lib/` (cobertura real, con pantallas) y mínimo
   `COBERTURA_MINIMA` (25 %; subirlo al agregar pruebas), builds web y
   APK como artefactos. Crea `.env` con `PAEGO_API_URL` (variable de repo opcional).
+  Job `e2e`: Postgres + backend de `Dania2204/oPAEGo` (rama `vars.OPAEGO_REF`, por defecto `main`)
+  con `seed_demo`, y `flutter test test/e2e`: admin crea un envío por el lote, el conductor sale
+  sin red (cola) y sincroniza, recorrido, llegada, mapa del admin y confirmación de la institución
+  con el código. Sin `PAEGO_E2E_URL` esas pruebas se saltan (en `flutter test` normal).
 - `release.yml`: con un tag `v*` compila el APK y lo publica en un GitHub Release. Firma con la
   keystore propia si existen los secretos `ANDROID_KEYSTORE_BASE64` (`base64 -w0 paego.jks`),
   `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` (crea

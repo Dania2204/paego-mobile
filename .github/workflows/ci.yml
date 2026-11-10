@@ -111,3 +111,61 @@ jobs:
           name: paego-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 7
+
+  # Prueba de punta a punta: la capa de datos de la app (login, cola sin
+  # conexión, envíos) contra el backend real de oPAEGo con PostgreSQL.
+  # Rama del backend: variable de repositorio OPAEGO_REF (por defecto main).
+  e2e:
+    name: Punta a punta con el backend
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: pae_go
+          POSTGRES_USER: pae_user
+          POSTGRES_PASSWORD: pae_password
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U pae_user" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://pae_user:pae_password@localhost:5432/pae_go
+      PAEGO_E2E_URL: http://127.0.0.1:8000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: Dania2204/oPAEGo
+          ref: ${{ vars.OPAEGO_REF || 'main' }}
+          path: oPAEGo
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: oPAEGo/backend/requirements.txt
+      - name: Levantar el backend con datos de demostración
+        working-directory: oPAEGo/backend
+        run: |
+          pip install -r requirements.txt
+          python manage.py migrate --noinput
+          python manage.py seed_demo
+          nohup python manage.py runserver 127.0.0.1:8000 --noreload > ../../servidor.log 2>&1 &
+          for i in $(seq 1 30); do
+            curl -sf -o /dev/null http://127.0.0.1:8000/api/schema/ && exit 0
+            curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8000/api/schema/ | grep -q 401 && exit 0
+            sleep 1
+          done
+          cat ../../servidor.log; exit 1
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          channel: stable
+          cache: true
+      - run: echo "PAEGO_API_URL=$PAEGO_E2E_URL" > .env
+      - run: flutter pub get
+      - name: Flujo completo de un envío
+        run: flutter test test/e2e --reporter expanded
+      - name: Registro del servidor
+        if: failure()
+        run: cat servidor.log

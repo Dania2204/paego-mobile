@@ -1,0 +1,3 @@
+tags:
+  # Pruebas de punta a punta contra el backend real (test/e2e). Necesitan PAEGO_E2E_URL.
+  e2e:
