@@ -27,7 +27,7 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
 
 - `.env` está declarado como asset en `pubspec.yaml`: si no existe, el build falla. Copiar
   `.env.example` → `.env` (está en `.gitignore`). `PAEGO_API_URL` = URL del backend
-  (Railway, `http://10.0.2.2:8000` en emulador Android, `http://localhost:8000` en Chrome; para
+  (producción en Azure `https://azwafmsbgbksw4m22.azurewebsites.net`; Railway como alternativa; `http://10.0.2.2:8000` en emulador Android, `http://localhost:8000` en Chrome; para
   Chrome el backend necesita `CORS_ALLOWED_ORIGINS` con el origen de la app).
 - Las pruebas de sqflite usan `sqflite_common_ffi` (dev dependency) y `http/testing.dart` MockClient.
   Cada archivo de pruebas que toca SQLite fija su propio `DatabaseHelper.nombreArchivo` (flutter test

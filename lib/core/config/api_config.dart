@@ -3,13 +3,14 @@ import 'package:flutter_dotenv/flutter_dotenv.dart';
 /// Dirección de la API REST de la plataforma web PAEGo (repo `oPAEGo`).
 ///
 /// Se configura con `PAEGO_API_URL` en `.env`. Ejemplos:
-/// - Producción (Railway): https://web-production-9a3cf.up.railway.app
+/// - Producción (Azure App Service): https://azwafmsbgbksw4m22.azurewebsites.net
+/// - Alternativa (Railway): https://web-production-9a3cf.up.railway.app
 /// - Emulador Android contra el runserver local: http://10.0.2.2:8000
 /// - Chrome / escritorio contra el runserver local: http://localhost:8000
 class ApiConfig {
   ApiConfig._();
 
-  static const _porDefecto = 'https://web-production-9a3cf.up.railway.app';
+  static const _porDefecto = 'https://azwafmsbgbksw4m22.azurewebsites.net';
 
   static String get baseUrl {
     String? valor;
