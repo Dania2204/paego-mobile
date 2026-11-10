@@ -107,9 +107,22 @@ void main() {
       final t = tensorDeEntrada(recorte, 112);
       expect(t.first.length, 112);
       expect(t.first.first.length, 112);
-      final px = t.first.first.first;
-      expect(px[0], closeTo(127.5 / 128, 1e-6));
-      expect(px[1], closeTo(-127.5 / 128, 1e-6));
+      final px = t.first.first.first; // NHWC: [1][y][x][canal]
+      expect(px[0], closeTo(1, 1e-6));
+      expect(px[1], closeTo(-1, 1e-6));
+
+      // Qualcomm MobileFaceNet: NCHW y píxeles en [0, 1].
+      final nchw = tensorDeEntrada(
+        recorte,
+        112,
+        canalesPrimero: true,
+        minimo: 0,
+        maximo: 1,
+      );
+      expect(nchw.first.length, 3);
+      expect(nchw.first[0][5][7], closeTo(1, 1e-6)); // rojo
+      expect(nchw.first[1][5][7], closeTo(0, 1e-6)); // verde
+      expect(nchw.first[2][5][7], closeTo(128 / 255, 1e-6)); // azul
     });
   });
 
