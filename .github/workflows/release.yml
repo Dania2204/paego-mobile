@@ -1,6 +1,13 @@
 # Entrega continua: al publicar un tag vX.Y.Z se compila el APK y se adjunta
 # a un GitHub Release, listo para instalar en los teléfonos de prueba.
 #   git tag v1.1.0 && git push origin v1.1.0
+#
+# Firma con la keystore propia si existen los secretos:
+#   ANDROID_KEYSTORE_BASE64   keystore .jks en base64 (base64 -w0 paego.jks)
+#   ANDROID_KEYSTORE_PASSWORD contraseña de la keystore
+#   ANDROID_KEY_ALIAS         alias de la clave (p. ej. paego)
+#   ANDROID_KEY_PASSWORD      contraseña de la clave
+# Sin ellos firma con la clave de depuración y lo avisa en el Release.
 name: Release APK
 
 on:
@@ -34,12 +41,40 @@ jobs:
           cache: true
       - run: echo "PAEGO_API_URL=$PAEGO_API_URL" > .env && echo "ARCGIS_API_KEY=$ARCGIS_API_KEY" >> .env
       - run: flutter pub get
+      - name: Keystore de release
+        id: firma
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::warning::Sin ANDROID_KEYSTORE_BASE64: el APK se firma con la clave de depuración."
+            echo "texto=Firmado con la clave de depuración (solo para pruebas, no para Play Store)." >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          echo "$KEYSTORE_BASE64" | base64 -d > android/app/paego-release.jks
+          {
+            echo "storeFile=app/paego-release.jks"
+            echo "storePassword=$KEYSTORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > android/key.properties
+          echo "texto=Firmado con la clave de release de PAEGo." >> "$GITHUB_OUTPUT"
       - name: Pruebas antes de publicar
         run: flutter test
       - name: Compilar APK
         run: |
           flutter build apk --release
           cp build/app/outputs/flutter-apk/app-release.apk "paego-${GITHUB_REF_NAME}.apk"
+          # Huella del certificado con el que quedó firmado (para verificar).
+          APKSIGNER="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)/apksigner"
+          "$APKSIGNER" verify --print-certs "paego-${GITHUB_REF_NAME}.apk" \
+            | grep -m1 "SHA-256" | tee -a "$GITHUB_STEP_SUMMARY" || true
+      - name: Borrar la keystore del runner
+        if: always()
+        run: rm -f android/app/paego-release.jks android/key.properties
       - uses: softprops/action-gh-release@v2
         with:
           files: paego-${{ github.ref_name }}.apk
@@ -47,4 +82,4 @@ jobs:
           body: |
             APK de PAEGo para conductores e instituciones.
             API configurada: ${{ env.PAEGO_API_URL }}
-            Firmado con la clave de depuración (solo para pruebas, no para Play Store).
+            Identificador: co.paego.app. ${{ steps.firma.outputs.texto }}

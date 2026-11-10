@@ -106,7 +106,12 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
   con un archivo generado que importa todo `lib/` (cobertura real, con pantallas) y mínimo
   `COBERTURA_MINIMA` (25 %; subirlo al agregar pruebas), builds web y
   APK como artefactos. Crea `.env` con `PAEGO_API_URL` (variable de repo opcional).
-- `release.yml`: con un tag `v*` compila el APK (firma debug) y lo publica en un GitHub Release.
+- `release.yml`: con un tag `v*` compila el APK y lo publica en un GitHub Release. Firma con la
+  keystore propia si existen los secretos `ANDROID_KEYSTORE_BASE64` (`base64 -w0 paego.jks`),
+  `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, `ANDROID_KEY_PASSWORD` (crea
+  `android/key.properties`, fuera de git); sin ellos, firma debug con aviso. `build.gradle.kts` usa
+  `key.properties` si existe. applicationId / bundle id: `co.paego.app` (el namespace Kotlin sigue
+  `com.example.opaego`). Perder la keystore impide actualizar la app instalada: guardarla aparte.
 - Dependabot para pub y GitHub Actions.
 
 ## Pendientes conocidos
