@@ -75,7 +75,7 @@ jobs:
       - name: Borrar la keystore del runner
         if: always()
         run: rm -f android/app/paego-release.jks android/key.properties
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: paego-${{ github.ref_name }}.apk
           generate_release_notes: true
