@@ -107,7 +107,7 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
   con un archivo generado que importa todo `lib/` (cobertura real, con pantallas) y mínimo
   `COBERTURA_MINIMA` (25 %; subirlo al agregar pruebas), builds web y
   APK como artefactos. Crea `.env` con `PAEGO_API_URL` (variable de repo opcional).
-  Job `e2e`: Postgres + backend de `Dania2204/oPAEGo` (rama `vars.OPAEGO_REF`, por defecto `main`)
+  Job `e2e`: Postgres + backend de `Dania2204/oPAEGo` (rama `vars.OPAEGO_REF`, por defecto `feature/plataforma-web`; pasar a `main` al fusionar)
   con `seed_demo`, y `flutter test test/e2e`: admin crea un envío por el lote, el conductor sale
   sin red (cola) y sincroniza, recorrido, llegada, mapa del admin y confirmación de la institución
   con el código. Sin `PAEGO_E2E_URL` esas pruebas se saltan (en `flutter test` normal).
