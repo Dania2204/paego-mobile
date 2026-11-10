@@ -8,6 +8,7 @@ import '../remote/api_client.dart';
 import '../services/rastreo_service.dart';
 import '../sync/sync_service.dart';
 import 'envio_repository.dart';
+import 'estudiantes_repository.dart';
 
 /// Sesión del usuario contra la API de la plataforma web PAEGo (RF-01, RF-02).
 ///
@@ -54,6 +55,11 @@ class AuthService {
     final user = _currentUser;
     if (user == null) return;
     await SyncService.instance.iniciar(user.id!);
+    if (user.role.canRegisterStudents) {
+      // El supervisor no maneja envíos: solo estudiantes de su institución.
+      await EstudiantesRepository.instance.iniciar(user.id!);
+      return;
+    }
     await EnvioRepository.instance.iniciar(user.id!);
     EnvioRepository.instance.refrescar().then((_) {}, onError: (_) {});
     await RastreoService.instance.iniciar(esConductor: user.role.canDriveRoute);
@@ -129,6 +135,8 @@ class AuthService {
       await SyncService.instance.sincronizar();
     } catch (_) {}
     await _detenerServicios();
+    // Datos de menores y plantillas faciales: no quedan en el teléfono.
+    await EstudiantesRepository.instance.borrarDatos();
     await ApiClient.instance.cerrarSesion();
     _currentUser = null;
     final prefs = await SharedPreferences.getInstance();
@@ -138,6 +146,7 @@ class AuthService {
   Future<void> _detenerServicios() async {
     await RastreoService.instance.detener();
     await EnvioRepository.instance.detener();
+    await EstudiantesRepository.instance.detener();
     await SyncService.instance.detener();
   }
 

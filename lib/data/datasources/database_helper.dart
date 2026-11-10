@@ -22,7 +22,7 @@ class DatabaseHelper {
     final path = kIsWeb ? name : join(await getDatabasesPath(), name);
     return openDatabase(
       path,
-      version: 6,
+      version: 7,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -31,6 +31,7 @@ class DatabaseHelper {
   Future<void> _onCreate(Database db, int version) async {
     await _createAppTextsTable(db);
     await _createSyncTables(db);
+    await _createEstudiantesTables(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -52,6 +53,9 @@ class DatabaseHelper {
       }
       await _createAppTextsTable(db);
       await _createSyncTables(db);
+    }
+    if (oldVersion < 7) {
+      await _createEstudiantesTables(db);
     }
   }
 
@@ -126,6 +130,31 @@ class DatabaseHelper {
       'CREATE INDEX IF NOT EXISTS operaciones_usuario_estado '
       'ON operaciones (usuario_id, estado, ocurrido_en)',
     );
+  }
+
+  /// Supervisor PAE (sin conexión):
+  /// - `estudiantes_cache`: estudiantes de su institución (identidad mínima).
+  /// - `plantillas_cache`: plantillas faciales de un curso, **cifradas** con
+  ///   AES-GCM (`Cofre`); se borran al cerrar sesión.
+  Future<void> _createEstudiantesTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS estudiantes_cache (
+        usuario_id     INTEGER NOT NULL,
+        id             INTEGER NOT NULL,
+        json           TEXT NOT NULL,
+        actualizado_en TEXT NOT NULL,
+        PRIMARY KEY (usuario_id, id)
+      )
+    ''');
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS plantillas_cache (
+        usuario_id     INTEGER NOT NULL,
+        curso          TEXT NOT NULL,
+        cifrado        TEXT NOT NULL,
+        actualizado_en TEXT NOT NULL,
+        PRIMARY KEY (usuario_id, curso)
+      )
+    ''');
   }
 
   Future<Map<String, Map<String, String>>> getAppTexts() async {

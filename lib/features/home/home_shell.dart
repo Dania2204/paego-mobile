@@ -5,11 +5,13 @@ import '../../core/router/app_router.dart';
 import '../../data/repositories/auth_service.dart';
 import '../../data/sync/sync_service.dart';
 import '../../data/models/user_model.dart';
+import '../../data/models/user_role.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../map/map_screen.dart';
 import '../nutrition/nutrition_screen.dart';
 import '../reports/reports_screen.dart';
 import '../profile/profile_screen.dart';
+import '../supervisor/supervisor_screens.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({
@@ -99,8 +101,40 @@ class _HomeShellState extends State<HomeShell> {
     }
   }
 
+  Widget _perfil(AppUser u) => ProfileScreen(
+    user: u,
+    onToggleTheme: widget.onToggleTheme,
+    themeMode: widget.themeMode,
+    onToggleLanguage: () {
+      widget.onToggleLanguage();
+      // force home shell rebuild too
+      setState(() {});
+    },
+    locale: widget.locale,
+  );
+
   List<_TabDef> _buildTabs() {
     final u = widget.user;
+    // Supervisor PAE: solo la entrega por estudiante (no maneja envíos).
+    if (u.role.canRegisterStudents) {
+      return [
+        _TabDef(
+          icon: Icons.groups_rounded,
+          label: S.text('nav.cursos', 'Cursos', 'Classes'),
+          screen: const SupervisorCursosScreen(),
+        ),
+        _TabDef(
+          icon: Icons.history_rounded,
+          label: S.text('nav.historial', 'Historial', 'History'),
+          screen: const HistorialSupervisorScreen(),
+        ),
+        _TabDef(
+          icon: Icons.person_rounded,
+          label: S.navProfile,
+          screen: _perfil(u),
+        ),
+      ];
+    }
     return [
       _TabDef(
         icon: Icons.dashboard_rounded,
@@ -122,20 +156,17 @@ class _HomeShellState extends State<HomeShell> {
         label: S.navNutrition,
         screen: NutritionScreen(user: u),
       ),
+      // Institución: consulta quién recibió el PAE hoy (solo lectura).
+      if (u.role.canViewStudents)
+        _TabDef(
+          icon: Icons.groups_rounded,
+          label: S.text('nav.estudiantes', 'Estudiantes', 'Students'),
+          screen: const EstudiantesHoyScreen(),
+        ),
       _TabDef(
         icon: Icons.person_rounded,
         label: S.navProfile,
-        screen: ProfileScreen(
-          user: u,
-          onToggleTheme: widget.onToggleTheme,
-          themeMode: widget.themeMode,
-          onToggleLanguage: () {
-            widget.onToggleLanguage();
-            // force home shell rebuild too
-            setState(() {});
-          },
-          locale: widget.locale,
-        ),
+        screen: _perfil(u),
       ),
     ];
   }

@@ -200,14 +200,17 @@ class SyncService {
   }
 
   /// Historial de operaciones del usuario (sin los puntos de ubicación).
-  Future<List<Operacion>> historial({int limite = 100}) async {
+  /// Con [prefijo] solo las de ese tipo (p. ej. `estudiante.`).
+  Future<List<Operacion>> historial({int limite = 100, String? prefijo}) async {
     final usuarioId = _usuarioId;
     if (usuarioId == null) return const [];
     final db = await _db;
     final filas = await db.query(
       'operaciones',
-      where: 'usuario_id = ? AND tipo != ?',
-      whereArgs: [usuarioId, 'envio.ubicacion'],
+      where: prefijo == null
+          ? 'usuario_id = ? AND tipo != ?'
+          : 'usuario_id = ? AND tipo LIKE ?',
+      whereArgs: [usuarioId, prefijo == null ? 'envio.ubicacion' : '$prefijo%'],
       orderBy: 'ocurrido_en DESC',
       limit: limite,
     );
@@ -353,6 +356,9 @@ class SyncService {
   static Map<String, dynamic> _sinFotos(Map<String, dynamic> datos) {
     final copia = Map<String, dynamic>.from(datos);
     if (copia['foto'] != null) copia['foto'] = '(enviada)';
+    // Plantillas faciales (dato sensible): una vez en el servidor no se
+    // conservan en la cola del teléfono.
+    if (copia['vectores'] != null) copia['vectores'] = '(enviados)';
     final novedad = copia['novedad'];
     if (novedad is Map && novedad['foto'] != null) {
       copia['novedad'] = {...novedad, 'foto': '(enviada)'};

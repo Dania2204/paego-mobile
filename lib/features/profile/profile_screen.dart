@@ -414,6 +414,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
         return Icons.school_rounded;
       case UserRole.driver:
         return Icons.local_shipping_rounded;
+      case UserRole.supervisor:
+        return Icons.face_retouching_natural_rounded;
     }
   }
 

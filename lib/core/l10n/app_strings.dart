@@ -63,10 +63,12 @@ abstract class S {
       () => roleAdmin,
       () => roleRector,
       () => roleDriver,
+      () => roleSupervisor,
       () => roleDescSuperAdmin,
       () => roleDescAdmin,
       () => roleDescRector,
       () => roleDescDriver,
+      () => roleDescSupervisor,
       () => dashboardWelcome,
       () => dashboardActiveDeliveries,
       () => dashboardPendingOrders,
@@ -292,6 +294,7 @@ abstract class S {
   static String get roleAdmin => _t('Admin', 'Admin');
   static String get roleRector => _t('Institución educativa', 'School');
   static String get roleDriver => _t('Conductor', 'Driver');
+  static String get roleSupervisor => _t('Supervisor PAE', 'Meal supervisor');
 
   static String get roleDescSuperAdmin => _t(
     'Acceso total — ver y gestionar todo.',
@@ -308,6 +311,11 @@ abstract class S {
   static String get roleDescDriver => _t(
     'Registra salida, recorrido y llegada de tus envíos.',
     'Record departure, route and arrival of your deliveries.',
+  );
+
+  static String get roleDescSupervisor => _t(
+    'Registra qué estudiantes recibieron el PAE cada día.',
+    'Records which students received the school meal each day.',
   );
 
   // ── Home / Dashboard ──────────────────────────────────────────────────────

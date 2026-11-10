@@ -42,11 +42,21 @@ void main() {
     await vieja.close();
 
     final db = await DatabaseHelper.instance.database;
-    expect(await db.getVersion(), 6);
+    expect(await db.getVersion(), 7);
     final nombres = await tablas(db);
     expect(nombres, isNot(contains('users')));
     expect(nombres, isNot(contains('delivery_orders')));
-    expect(nombres, containsAll(['operaciones', 'envios_cache', 'app_texts']));
+    expect(
+      nombres,
+      containsAll([
+        'operaciones',
+        'envios_cache',
+        'app_texts',
+        // v7: supervisor PAE
+        'estudiantes_cache',
+        'plantillas_cache',
+      ]),
+    );
     // Los datos de la integración con la API no se pierden.
     expect(await db.query('envios_cache'), hasLength(1));
   });
