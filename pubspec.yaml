@@ -27,7 +27,7 @@ dependencies:
 
   # Image picking & file handling
   image_picker: ^1.1.2
-  path_provider: ^2.1.4
+  path_provider: ^2.1.6
 
   # Network / cloud sync
   http: ^1.2.2
