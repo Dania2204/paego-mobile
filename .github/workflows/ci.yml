@@ -60,7 +60,7 @@ jobs:
             if (p < min) exit 1
           }' coverage/lcov.info | tee -a "$GITHUB_STEP_SUMMARY"
           exit "${PIPESTATUS[0]}"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: cobertura-app
@@ -81,7 +81,7 @@ jobs:
       - run: echo "PAEGO_API_URL=$PAEGO_API_URL" > .env && echo "ARCGIS_API_KEY=$ARCGIS_API_KEY" >> .env
       - run: flutter pub get
       - run: flutter build web --release
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: paego-web
           path: build/web
@@ -106,7 +106,7 @@ jobs:
       - run: echo "PAEGO_API_URL=$PAEGO_API_URL" > .env && echo "ARCGIS_API_KEY=$ARCGIS_API_KEY" >> .env
       - run: flutter pub get
       - run: flutter build apk --release
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: paego-apk
           path: build/app/outputs/flutter-apk/app-release.apk
