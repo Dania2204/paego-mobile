@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:cryptography/cryptography.dart';
+import 'package:flutter/services.dart' show MissingPluginException;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Dónde vive la clave del cofre (Keystore/Keychain; en pruebas, memoria).
@@ -22,8 +23,16 @@ class AlmacenClaveSeguro implements AlmacenClave {
   Future<void> guardar(String valor) =>
       _almacen.write(key: _nombre, value: valor);
 
+  /// Sin el plugin (pruebas en la VM de Dart) nunca se guardó una clave, así
+  /// que no hay nada que borrar; no debe impedir cerrar la sesión.
   @override
-  Future<void> borrar() => _almacen.delete(key: _nombre);
+  Future<void> borrar() async {
+    try {
+      await _almacen.delete(key: _nombre);
+    } on MissingPluginException {
+      return;
+    }
+  }
 }
 
 class AlmacenClaveEnMemoria implements AlmacenClave {

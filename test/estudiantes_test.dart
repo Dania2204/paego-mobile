@@ -127,6 +127,14 @@ void main() {
   });
 
   group('cofre', () {
+    test(
+      'borrar la clave sin el plugin no rompe el cierre de sesión',
+      () async {
+        TestWidgetsFlutterBinding.ensureInitialized();
+        await expectLater(AlmacenClaveSeguro().borrar(), completes);
+      },
+    );
+
     test('cifra y descifra; sin la clave no se puede leer', () async {
       final almacen = AlmacenClaveEnMemoria();
       final cofre = Cofre(almacen);
