@@ -9,7 +9,8 @@ vive en `../oPAEGo` (API REST + panel del administrador). Repo remoto:
 `github.com/Dania2204/trabajo_Final_Flutter` (trabajo por PRs desde `feature/setup`).
 
 Según el documento de tesis (`../oPAEGo/docs/`), la app la usan el **conductor** y la
-**institución educativa**. Está conectada a la API de `oPAEGo` (JWT); los usuarios se crean en la
+**institución educativa**; además el **supervisor PAE** (rol nuevo, RF-39…42) registra qué
+estudiantes reciben el PAE cada día. Está conectada a la API de `oPAEGo` (JWT); los usuarios se crean en la
 web, la app solo inicia sesión. Contrato de la API: `/api/schema/` del backend.
 
 ## Comandos
@@ -72,13 +73,32 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
   `Location` falso (`usarLocation`).
 - Modelos: `models/envio.dart` envuelve el JSON del `EnvioSerializer` (estados
   `ASIGNADO|EN_TRANSITO|ENTREGADO|CON_NOVEDAD|CANCELADO`). Roles: `CONDUCTOR→driver`,
-  `INSTITUCION→rector`, `ADMINISTRADOR→admin` (`UserRoleX.fromBackend`); los getters de
+  `INSTITUCION→rector`, `ADMINISTRADOR→admin`, `SUPERVISOR→supervisor` (`UserRoleX.fromBackend`); los getters de
   `user_role.dart` solo muestran/ocultan UI, los permisos reales los aplica la API.
 - UI de envíos compartida en `lib/features/envios/envio_widgets.dart` (detalle, acciones por rol,
   novedad, confirmar recepción con código de 6 dígitos). Mapa, dashboard e informes leen de
   `EnvioRepository`/`SyncService`. Los usuarios se crean en la web (no hay pantalla de personal).
-- SQLite `paego.db` versión 6: `app_texts`, `envios_cache`, `operaciones`. La v6 borra las tablas
-  del modo local anterior a la API (`users`, `delivery_orders`, …).
+- SQLite `paego.db` versión 7: `app_texts`, `envios_cache`, `operaciones`, `estudiantes_cache`,
+  `plantillas_cache`. La v6 borra las tablas del modo local anterior a la API (`users`, …).
+
+### Supervisor PAE (`lib/features/supervisor/`, `repositories/estudiantes_repository.dart`)
+- Pestañas propias en `HomeShell` (Cursos, Historial, Perfil); no maneja envíos. El rector ve la
+  pestaña de solo lectura "Estudiantes" (`GET /api/estudiantes/cursos/`, en línea).
+- Descarga la institución (`GET /api/estudiantes/?page_size=500`) a `estudiantes_cache`; el avance
+  por curso se calcula en el teléfono. `entrega_del_dia` de la caché solo cuenta si su fecha es hoy.
+- Acciones `estudiante.autorizar|inscribir|entregar|revocar` → cola de `SyncService` (sin red),
+  aplicadas al instante sobre la lista. Los vectores se reemplazan por `(enviados)` en la cola al
+  sincronizar. Historial = operaciones `estudiante.*` de la cola.
+- Reconocimiento 1:N por curso en el teléfono: `services/rostro/` — `extractor.dart` (interfaz,
+  import condicional: `extractor_movil.dart` con ML Kit + `tflite_flutter` en Android/iOS,
+  `ExtractorNoDisponible` en web), `comparador.dart` (coseno, umbral del servidor
+  `umbral_similitud_facial`), `preprocesado.dart`, `cofre.dart` (AES-256-GCM, clave en
+  `flutter_secure_storage`, se destruye al cerrar sesión junto con las cachés).
+- Modelo `assets/modelos/mobilefacenet.tflite` **fuera de git** (licencia de los pesos, ver
+  `assets/modelos/LEEME.md`); sin él la app compila y todo es registro manual. Prueba de vida:
+  girar la cabeza (ML Kit `headEulerAngleY`) antes de la foto de frente. Las fotos se borran tras
+  analizarlas; nunca se guardan. Ley 1581: sin autorización del acudiente no se inscribe, y
+  siempre existe la entrega manual con motivo.
 
 ### Mapa base (`lib/core/config/mapa_base.dart`)
 - `flutter_map` (código abierto) con teselas del servicio **Static Basemap Tiles de ArcGIS

@@ -1,6 +1,6 @@
 import '../../core/l10n/app_strings.dart';
 
-enum UserRole { superAdmin, admin, rector, driver }
+enum UserRole { superAdmin, admin, rector, driver, supervisor }
 
 extension UserRoleX on UserRole {
   String get label {
@@ -13,6 +13,8 @@ extension UserRoleX on UserRole {
         return S.roleRector;
       case UserRole.driver:
         return S.roleDriver;
+      case UserRole.supervisor:
+        return S.roleSupervisor;
     }
   }
 
@@ -26,6 +28,8 @@ extension UserRoleX on UserRole {
         return S.roleDescRector;
       case UserRole.driver:
         return S.roleDescDriver;
+      case UserRole.supervisor:
+        return S.roleDescSupervisor;
     }
   }
 
@@ -42,6 +46,13 @@ extension UserRoleX on UserRole {
   /// Institución educativa: confirma la recepción (RF-24 a RF-28).
   bool get canConfirmReception => this == UserRole.rector;
 
+  /// Supervisor PAE: inscribe estudiantes y registra la entrega diaria.
+  bool get canRegisterStudents => this == UserRole.supervisor;
+
+  /// Quién consulta la entrega del PAE por estudiante (solo lectura el rector).
+  bool get canViewStudents =>
+      this == UserRole.supervisor || this == UserRole.rector;
+
   bool get canSubmitReport =>
       this == UserRole.rector || this == UserRole.driver;
 
@@ -54,6 +65,8 @@ extension UserRoleX on UserRole {
         return UserRole.admin;
       case 'INSTITUCION':
         return UserRole.rector;
+      case 'SUPERVISOR':
+        return UserRole.supervisor;
       case 'CONDUCTOR':
       default:
         return UserRole.driver;

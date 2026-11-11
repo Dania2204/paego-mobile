@@ -46,6 +46,7 @@ class AppUser {
       UserRole.admin || UserRole.superAdmin => 'ADMINISTRADOR',
       UserRole.rector => 'INSTITUCION',
       UserRole.driver => 'CONDUCTOR',
+      UserRole.supervisor => 'SUPERVISOR',
     },
     'conductor_id': conductorId,
     'institucion_id': institucionId,
