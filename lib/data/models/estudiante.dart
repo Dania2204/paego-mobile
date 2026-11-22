@@ -24,17 +24,24 @@ class Estudiante {
   factory Estudiante.fromJson(Map<String, dynamic> j) {
     final entrega = (j['entrega_del_dia'] as Map?)?.cast<String, dynamic>();
     final qr = (j['codigo_qr'] as String?)?.trim() ?? '';
+    // El SIMAT trae códigos (tipo de documento "5", jornada "6"); el servidor
+    // manda además la sigla/nombre legible, que es lo que se muestra.
+    String legible(String etiqueta, String codigo) {
+      final e = (j[etiqueta] as String?)?.trim() ?? '';
+      return e.isNotEmpty ? e : (j[codigo] as String?)?.trim() ?? '';
+    }
+
     return Estudiante(
       id: j['id'] as int,
       nombres: j['nombres'] as String? ?? '',
       apellidos: j['apellidos'] as String? ?? '',
-      tipoDocumento: j['tipo_documento'] as String? ?? '',
+      tipoDocumento: legible('tipo_documento_etiqueta', 'tipo_documento'),
       numeroDocumento: j['numero_documento'] as String? ?? '',
       grado: '${j['grado'] ?? ''}',
       grupo: '${j['grupo'] ?? ''}',
       curso: j['curso'] as String? ?? '${j['grado']} ${j['grupo']}',
       gradoEtiqueta: j['grado_etiqueta'] as String? ?? '',
-      jornada: j['jornada'] as String? ?? '',
+      jornada: legible('jornada_etiqueta', 'jornada'),
       codigoQr: qr.isEmpty ? null : qr,
       entregaFecha: entrega?['fecha'] as String?,
       entregaMetodo: entrega?['metodo'] as String?,
@@ -58,7 +65,7 @@ class Estudiante {
   /// Grado legible, p. ej. "7°" o "Transición".
   final String gradoEtiqueta;
 
-  /// MAÑANA | TARDE | ÚNICA | … (como venga del SIMAT).
+  /// Jornada legible (Mañana, Única…); código SIMAT si el servidor no la manda.
   final String jornada;
 
   /// Token del carné QR (`PAEGO-E1:<codigo>`). El rol institución puede no

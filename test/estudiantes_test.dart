@@ -83,6 +83,20 @@ void main() {
     });
   });
 
+  test('muestra la sigla del documento y la jornada legible del SIMAT', () {
+    final e = Estudiante.fromJson({
+      ...estudianteJson(1),
+      'tipo_documento': '5',
+      'tipo_documento_etiqueta': 'RC',
+      'jornada': '6',
+      'jornada_etiqueta': 'Única',
+    });
+    expect(e.documento, 'RC 101');
+    expect(e.jornada, 'Única');
+    // Sin etiquetas (servidor anterior) se usa el código tal cual.
+    expect(Estudiante.fromJson(estudianteJson(2)).documento, 'TI 102');
+  });
+
   test('rol SUPERVISOR del backend', () {
     final rol = UserRoleX.fromBackend('SUPERVISOR');
     expect(rol, UserRole.supervisor);
