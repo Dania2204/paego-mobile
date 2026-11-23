@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart'
+    show MapboxOptions;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -17,6 +19,9 @@ enum ProveedorMapa { mapbox, arcgis, openStreetMap }
 ///   `ARCGIS_API_KEY` en `.env`.
 /// - **OpenStreetMap**: siempre disponible, sin clave.
 enum EstiloMapa {
+  /// Mapbox Standard en 3D (edificios, árboles, luz según la hora). Se dibuja
+  /// con el SDK oficial de Mapbox, no con teselas raster.
+  mapbox3d(ProveedorMapa.mapbox, 'mapbox/standard', '3D', '3D'),
   mapboxNavegacion(
     ProveedorMapa.mapbox,
     'mapbox/navigation-day-v1',
@@ -80,6 +85,9 @@ enum EstiloMapa {
   final String nombreEn;
 
   bool get esMapbox => proveedor == ProveedorMapa.mapbox;
+
+  /// Mapa vectorial 3D (SDK de Mapbox) en vez de teselas en `flutter_map`.
+  bool get es3d => this == mapbox3d;
   bool get esArcgis => proveedor == ProveedorMapa.arcgis;
 
   /// El estilo ya es oscuro: no hay que invertir colores en el tema oscuro.
@@ -106,7 +114,7 @@ class MapaBase {
   static final estilo = ValueNotifier<EstiloMapa>(_porDefecto);
 
   static EstiloMapa get _porDefecto => hayMapbox
-      ? EstiloMapa.mapboxNavegacion
+      ? EstiloMapa.mapbox3d
       : hayArcgis
       ? EstiloMapa.navegacion
       : EstiloMapa.openStreetMap;
@@ -127,6 +135,14 @@ class MapaBase {
   static String? get claveArcgis => _leer('ARCGIS_API_KEY');
 
   static bool get hayMapbox => tokenMapbox != null;
+
+  /// Registra el token en el SDK de Mapbox (mapa 3D). Se llama al arrancar,
+  /// después de cargar `.env`.
+  static void configurar() {
+    final token = tokenMapbox;
+    if (token != null) MapboxOptions.setAccessToken(token);
+  }
+
   static bool get hayArcgis => claveArcgis != null;
 
   /// Estilos que se pueden elegir con la configuración actual.
@@ -185,7 +201,10 @@ class MapaBase {
       return TileLayer(
         // Teselas de 512 px: con zoomOffset -1 se ven a la escala normal y se
         // piden 4 veces menos (cuenta para la capa gratuita de 200 000 al mes).
-        urlTemplate: plantillaMapbox(e.ruta!),
+        // El 3D no tiene teselas raster: si se pide su capa, va Calles.
+        urlTemplate: plantillaMapbox(
+          e.es3d ? EstiloMapa.mapboxCalles.ruta! : e.ruta!,
+        ),
         additionalOptions: {'token': token},
         tileSize: 512,
         zoomOffset: -1,

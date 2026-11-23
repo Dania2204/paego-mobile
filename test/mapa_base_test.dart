@@ -81,12 +81,21 @@ void main() {
       ),
     );
 
-    test('Mapbox es el mapa principal y va primero en el selector', () async {
+    test('el mapa 3D de Mapbox es el principal y va primero', () async {
       await MapaBase.cargar();
-      expect(MapaBase.estilo.value, EstiloMapa.mapboxNavegacion);
-      expect(MapaBase.disponibles.first, EstiloMapa.mapboxNavegacion);
+      expect(MapaBase.estilo.value, EstiloMapa.mapbox3d);
+      expect(MapaBase.estilo.value.es3d, isTrue);
+      expect(MapaBase.disponibles.first, EstiloMapa.mapbox3d);
+      expect(MapaBase.disponibles, contains(EstiloMapa.mapboxNavegacion));
       expect(MapaBase.disponibles, contains(EstiloMapa.calles));
       expect(MapaBase.disponibles.last, EstiloMapa.openStreetMap);
+    });
+
+    test('la capa raster del 3D (respaldo) usa Calles', () {
+      expect(
+        MapaBase.capa(EstiloMapa.mapbox3d).urlTemplate,
+        contains('mapbox/streets-v12'),
+      );
     });
 
     test('la capa usa la Static Tiles API con teselas de 512 px', () {

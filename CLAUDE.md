@@ -81,7 +81,17 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
   del modo local anterior a la API (`users`, `delivery_orders`, …).
 
 ### Mapa base (`lib/core/config/mapa_base.dart`)
-- `flutter_map` (código abierto) con teselas raster. **Mapa principal: Mapbox** (Static Tiles
+- **Mapa principal: Mapbox Standard en 3D** (`EstiloMapa.mapbox3d`, por defecto con token):
+  `lib/features/map/mapa_3d.dart` con el SDK oficial `mapbox_maps_flutter` (Android, iOS y web;
+  en web carga Mapbox GL JS solo). Edificios 3D, cámara inclinada 58°, luz `dawn/day/dusk/night`
+  según la hora (noche en tema oscuro). Marcadores y recorrido son fuentes GeoJSON + capas
+  (`SymbolLayer`/`LineLayer`, íconos dibujados en `Canvas`), no anotaciones: las anotaciones no
+  existen en web. Toque en un pin → `TapInteraction` → detalle del envío. El token se registra en
+  `MapaBase.configurar()` (main). En `web/index.html`, `.mapboxgl-map { isolation: isolate }`
+  evita que el logo/atribución de GL JS se vean encima de los paneles de Flutter. Si un build
+  web falla con "No default instance of MapboxMapsFlutterPlatform", borrar
+  `.dart_tool/flutter_build` (registrante de plugins web viejo en caché).
+- Los demás estilos usan `flutter_map` (código abierto) con teselas raster: **Mapbox** (Static Tiles
   API de los estilos oficiales `mapbox/navigation-day-v1`, `streets-v12`, `outdoors-v12`,
   `light-v11`, `navigation-night-v1`, `satellite-streets-v12`) si `MAPBOX_ACCESS_TOKEN` (token
   público `pk.…`) está en `.env`. URL `https://api.mapbox.com/styles/v1/{usuario}/{estilo}/tiles/512/{z}/{x}/{y}{r}?access_token=`,
