@@ -161,7 +161,7 @@ class _MapScreenState extends State<MapScreen> {
                   color: PaeColors.primary,
                 ),
                 title: Text(S.isSpanish ? e.nombreEs : e.nombreEn),
-                subtitle: Text(e.esArcgis ? 'ArcGIS' : 'OpenStreetMap'),
+                subtitle: Text(e.nombreProveedor),
                 onTap: () => Navigator.pop(ctx, e),
               ),
           ],
@@ -219,15 +219,23 @@ class _MapScreenState extends State<MapScreen> {
         return Scaffold(
           body: Stack(
             children: [
-              ColorFiltered(
-                colorFilter: isDark
-                    ? const ColorFilter.matrix(<double>[
-                        -0.85, 0, 0, 0, 255, //
-                        0, -0.85, 0, 0, 255, //
-                        0, 0, -0.85, 0, 255, //
-                        0, 0, 0, 1, 0,
-                      ])
-                    : const ColorFilter.mode(Colors.transparent, BlendMode.dst),
+              ValueListenableBuilder<EstiloMapa>(
+                valueListenable: MapaBase.estilo,
+                builder: (context, elegido, mapa) => ColorFiltered(
+                  // Mapbox tiene estilo nocturno propio; los demás se invierten.
+                  colorFilter: isDark && MapaBase.invertirEnOscuro(elegido)
+                      ? const ColorFilter.matrix(<double>[
+                          -0.85, 0, 0, 0, 255, //
+                          0, -0.85, 0, 0, 255, //
+                          0, 0, -0.85, 0, 255, //
+                          0, 0, 0, 1, 0,
+                        ])
+                      : const ColorFilter.mode(
+                          Colors.transparent,
+                          BlendMode.dst,
+                        ),
+                  child: mapa,
+                ),
                 child: FlutterMap(
                   mapController: _mapCtrl,
                   options: MapOptions(
@@ -243,7 +251,10 @@ class _MapScreenState extends State<MapScreen> {
                   children: [
                     ValueListenableBuilder<EstiloMapa>(
                       valueListenable: MapaBase.estilo,
-                      builder: (context, estilo, _) => MapaBase.capa(estilo),
+                      builder: (context, estilo, _) => MapaBase.capa(
+                        MapaBase.efectivo(estilo, oscuro: isDark),
+                        retina: RetinaMode.isHighDensity(context),
+                      ),
                     ),
                     if (_recorrido.length > 1)
                       PolylineLayer(
@@ -307,10 +318,18 @@ class _MapScreenState extends State<MapScreen> {
                     ),
                     ValueListenableBuilder<EstiloMapa>(
                       valueListenable: MapaBase.estilo,
-                      builder: (context, estilo, _) => RichAttributionWidget(
-                        // La clave fuerza a reconstruirla al cambiar de estilo.
-                        key: ValueKey(estilo),
-                        attributions: MapaBase.atribuciones(estilo),
+                      builder: (context, estilo, _) => Padding(
+                        // Encima del panel de envíos: el logo de Mapbox y la
+                        // atribución deben quedar visibles (términos de uso).
+                        padding: EdgeInsets.only(
+                          bottom: activos.isEmpty ? 96 : 224,
+                        ),
+                        child: RichAttributionWidget(
+                          // La clave fuerza a reconstruirla al cambiar de estilo.
+                          key: ValueKey(estilo),
+                          alignment: AttributionAlignment.bottomLeft,
+                          attributions: MapaBase.atribuciones(estilo),
+                        ),
                       ),
                     ),
                   ],
