@@ -25,14 +25,7 @@ class GradientHeader extends StatelessWidget implements PreferredSizeWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [Color(0xFF0A5C50), Color(0xFF0D8C78), Color(0xFF00D4AA)],
-          stops: [0.0, 0.6, 1.0],
-        ),
-      ),
+      decoration: const BoxDecoration(gradient: PaeColors.heroGradient),
       child: SafeArea(
         bottom: false,
         child: Padding(

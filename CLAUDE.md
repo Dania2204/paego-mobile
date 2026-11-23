@@ -111,6 +111,10 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
   contra el backend local con `adb reverse tcp:8000 tcp:8000` y `PAEGO_API_URL=http://localhost:8000`.
 
 ### Otros
+- Colores: `PaeColors` (`lib/app/theme.dart`) copia la paleta GOV.CO del panel web
+  (`../oPAEGo/backend/static/css/tokens.css`): azul `#3366CC`/`#004884`, fondo `#F2F4F7`, estados
+  del envío iguales a la web, sin degradados (los nombres `*Gradient` quedan planos). Cambiar los
+  dos repos a la vez.
 - Textos bilingües (`lib/core/l10n/app_strings.dart`, clase `S`): `S.text('clave', 'es', 'en')`
   o `_t('es','en')` (clave = hash FNV del texto: cambiar el texto cambia la clave). Se sincronizan
   con la tabla Supabase `app_texts`.

@@ -46,9 +46,9 @@ extension EstadoEnvioX on EstadoEnvio {
       case EstadoEnvio.entregado:
         return PaeColors.statusDelivered;
       case EstadoEnvio.conNovedad:
-        return PaeColors.warning;
+        return PaeColors.statusNovedad;
       case EstadoEnvio.cancelado:
-        return PaeColors.inactive;
+        return PaeColors.statusCancelado;
     }
   }
 
