@@ -44,6 +44,10 @@ dependencies:
   url_launcher: ^6.3.3
   mapbox_maps_flutter: ^3.35.2
 
+  # Supervisor PAE: código QR por estudiante (ficha + lector)
+  mobile_scanner: ^7.1.2
+  qr_flutter: ^4.1.0
+
 
 dev_dependencies:
   flutter_test:

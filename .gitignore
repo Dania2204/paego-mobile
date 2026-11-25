@@ -49,3 +49,6 @@ app.*.map.json
 
 # Lo genera el CI para medir la cobertura de todo lib/
 test/cobertura_todos_test.dart
+
+# Modelo facial: no se versiona (licencia y tamaño, ver assets/modelos/LEEME.md)
+assets/modelos/*.tflite
