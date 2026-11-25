@@ -455,7 +455,9 @@ class _MapScreenState extends State<MapScreen> {
                 ),
               ),
               Positioned(
-                top: 100,
+                // Debajo del encabezado (90) más la barra de estado: con un
+                // valor fijo, en Android el aviso tapaba el subtítulo.
+                top: MediaQuery.paddingOf(context).top + 98,
                 left: 16,
                 right: 16,
                 child: Column(

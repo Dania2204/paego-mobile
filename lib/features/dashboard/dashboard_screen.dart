@@ -226,6 +226,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   child: GridView.count(
                     crossAxisCount: 2,
                     shrinkWrap: true,
+                    // Sin esto hereda el margen de la barra de estado y en
+                    // Android deja un hueco bajo el encabezado.
+                    padding: EdgeInsets.zero,
                     physics: const NeverScrollableScrollPhysics(),
                     crossAxisSpacing: 12,
                     mainAxisSpacing: 12,
