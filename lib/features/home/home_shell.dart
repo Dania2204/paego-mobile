@@ -271,13 +271,14 @@ class BarraSincronizacion extends StatelessWidget {
           );
         } else if (!e.enLinea) {
           texto = e.pendientes > 0
-              ? S
-                    .text(
-                      'sync.offline_pendientes',
-                      'Sin conexión · {n} cambios guardados en el teléfono',
-                      'Offline · {n} changes saved on the phone',
-                    )
-                    .replaceAll('{n}', '${e.pendientes}')
+              ? S.cantidad(
+                  e.pendientes,
+                  'sync.offline_pendientes',
+                  esUno: 'Sin conexión · 1 cambio guardado en el teléfono',
+                  es: 'Sin conexión · {n} cambios guardados en el teléfono',
+                  enUno: 'Offline · 1 change saved on the phone',
+                  en: 'Offline · {n} changes saved on the phone',
+                )
               : S.text(
                   'sync.offline',
                   'Sin conexión · los cambios se guardan en el teléfono',
@@ -286,21 +287,23 @@ class BarraSincronizacion extends StatelessWidget {
           color = PaeColors.warning;
           icono = Icons.wifi_off_rounded;
         } else if (e.pendientes > 0) {
-          texto = S
-              .text(
-                'sync.enviando',
-                'Enviando {n} cambios a la plataforma…',
-                'Sending {n} changes to the platform…',
-              )
-              .replaceAll('{n}', '${e.pendientes}');
+          texto = S.cantidad(
+            e.pendientes,
+            'sync.enviando',
+            esUno: 'Enviando 1 cambio a la plataforma…',
+            es: 'Enviando {n} cambios a la plataforma…',
+            enUno: 'Sending 1 change to the platform…',
+            en: 'Sending {n} changes to the platform…',
+          );
         } else if (e.rechazadas > 0) {
-          texto = S
-              .text(
-                'sync.rechazadas',
-                '{n} cambios fueron rechazados por el servidor (ver Informes)',
-                '{n} changes were rejected by the server (see Reports)',
-              )
-              .replaceAll('{n}', '${e.rechazadas}');
+          texto = S.cantidad(
+            e.rechazadas,
+            'sync.rechazadas',
+            esUno: '1 cambio fue rechazado por el servidor (ver Informes)',
+            es: '{n} cambios fueron rechazados por el servidor (ver Informes)',
+            enUno: '1 change was rejected by the server (see Reports)',
+            en: '{n} changes were rejected by the server (see Reports)',
+          );
           color = PaeColors.error;
           icono = Icons.error_outline_rounded;
         }

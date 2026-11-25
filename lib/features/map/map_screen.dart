@@ -406,13 +406,14 @@ class _MapScreenState extends State<MapScreen> {
                             )
                             .replaceAll('{n}', '${activos.length}')
                             .replaceAll('{c}', '${_enVivo.length}')
-                      : S
-                            .text(
-                              'mapa.resumen',
-                              '{n} envíos activos',
-                              '{n} active deliveries',
-                            )
-                            .replaceAll('{n}', '${activos.length}'),
+                      : S.cantidad(
+                          activos.length,
+                          'mapa.resumen',
+                          esUno: '1 envío activo',
+                          es: '{n} envíos activos',
+                          enUno: '1 active delivery',
+                          en: '{n} active deliveries',
+                        ),
                   actions: [
                     if (MapaBase.disponibles.length > 1)
                       IconButton(
