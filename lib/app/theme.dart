@@ -175,8 +175,10 @@ ThemeData buildLightTheme() {
     colorScheme: scheme,
     textTheme: PaeTypography.textTheme,
     scaffoldBackgroundColor: PaeColors.bgLight,
+    // Mismo azul que GradientHeader: un AppBar normal (supervisor) tenía texto
+    // blanco sobre el fondo claro de la pantalla.
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.transparent,
+      backgroundColor: PaeColors.primaryDark,
       foregroundColor: PaeColors.textLight,
       elevation: 0,
       centerTitle: false,
@@ -280,7 +282,6 @@ ThemeData buildLightTheme() {
       backgroundColor: PaeColors.primary,
       foregroundColor: Colors.white,
       elevation: 4,
-      shape: CircleBorder(),
     ),
     dividerTheme: const DividerThemeData(
       color: PaeColors.divider,
@@ -319,7 +320,7 @@ ThemeData buildDarkTheme() {
     ),
     scaffoldBackgroundColor: PaeColors.bgDark,
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.transparent,
+      backgroundColor: PaeColors.primaryDark,
       foregroundColor: Colors.white,
       elevation: 0,
       centerTitle: false,
