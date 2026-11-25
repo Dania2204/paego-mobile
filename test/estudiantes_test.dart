@@ -180,6 +180,18 @@ void main() {
       await SyncService.instance.detener();
     });
 
+    test(
+      'al iniciar descarga la institución sin que la pida la pantalla',
+      () async {
+        // La pantalla de cursos puede pedir la descarga antes de que se conozca
+        // el usuario; iniciar() debe descargar por su cuenta.
+        for (var i = 0; i < 50 && repo.estudiantes.value.isEmpty; i++) {
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+        }
+        expect(repo.estudiantes.value.map((e) => e.id), [1, 2, 3, 4]);
+      },
+    );
+
     test('descarga la institución y arma el avance por curso', () async {
       await repo.descargar();
       final cursos = repo.cursos();

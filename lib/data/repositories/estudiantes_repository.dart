@@ -65,6 +65,9 @@ class EstudiantesRepository {
         descargar().then((_) {}, onError: (_) {});
       }
     });
+    // La pantalla de cursos puede pedir la descarga antes de que se conozca el
+    // usuario (y entonces no descarga nada): se descarga aquí al iniciar.
+    descargar().then((_) {}, onError: (_) {});
   }
 
   Future<void> detener() async {
