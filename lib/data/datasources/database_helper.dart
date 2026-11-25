@@ -18,11 +18,18 @@ class DatabaseHelper {
     return _db!;
   }
 
+  /// Cierra la base (pruebas de migración: la siguiente lectura la reabre).
+  @visibleForTesting
+  Future<void> cerrar() async {
+    await _db?.close();
+    _db = null;
+  }
+
   Future<Database> _initDB(String name) async {
     final path = kIsWeb ? name : join(await getDatabasesPath(), name);
     return openDatabase(
       path,
-      version: 6,
+      version: 8,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -31,6 +38,7 @@ class DatabaseHelper {
   Future<void> _onCreate(Database db, int version) async {
     await _createAppTextsTable(db);
     await _createSyncTables(db);
+    await _createEstudiantesTables(db);
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
@@ -52,6 +60,24 @@ class DatabaseHelper {
       }
       await _createAppTextsTable(db);
       await _createSyncTables(db);
+    }
+    if (oldVersion < 7) {
+      await _createEstudiantesTables(db);
+    }
+    if (oldVersion < 8) {
+      // La entrega del PAE pasa de reconocimiento facial a código QR: se
+      // borran las plantillas faciales cifradas y las operaciones biométricas
+      // que hayan quedado en la cola (el servidor ya no las acepta).
+      await db.execute('DROP TABLE IF EXISTS plantillas_cache');
+      await db.delete(
+        'operaciones',
+        where: 'tipo IN (?, ?, ?)',
+        whereArgs: [
+          'estudiante.autorizar',
+          'estudiante.inscribir',
+          'estudiante.revocar',
+        ],
+      );
     }
   }
 
@@ -126,6 +152,21 @@ class DatabaseHelper {
       'CREATE INDEX IF NOT EXISTS operaciones_usuario_estado '
       'ON operaciones (usuario_id, estado, ocurrido_en)',
     );
+  }
+
+  /// Supervisor PAE (sin conexión): `estudiantes_cache` con los estudiantes
+  /// de su institución (identidad mínima + código QR); se borra al cerrar
+  /// sesión.
+  Future<void> _createEstudiantesTables(Database db) async {
+    await db.execute('''
+      CREATE TABLE IF NOT EXISTS estudiantes_cache (
+        usuario_id     INTEGER NOT NULL,
+        id             INTEGER NOT NULL,
+        json           TEXT NOT NULL,
+        actualizado_en TEXT NOT NULL,
+        PRIMARY KEY (usuario_id, id)
+      )
+    ''');
   }
 
   Future<Map<String, Map<String, String>>> getAppTexts() async {

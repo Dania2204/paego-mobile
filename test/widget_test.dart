@@ -48,6 +48,7 @@ void main() {
         'nombre': 'Carlos Pérez',
         'rol': 'CONDUCTOR',
         'telefono': '311',
+        'numero_documento': '1085000001',
         'acepto_tratamiento_datos_en': null,
         'conductor_id': 2,
         'institucion_id': null,
@@ -59,6 +60,7 @@ void main() {
       expect(otra.id, 5);
       expect(otra.role, UserRole.driver);
       expect(otra.conductorId, 2);
+      expect((otra.phone, otra.idNumber), ('311', '1085000001'));
     });
   });
 }

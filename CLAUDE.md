@@ -9,7 +9,8 @@ vive en `../oPAEGo` (API REST + panel del administrador). Repo remoto:
 `github.com/Dania2204/trabajo_Final_Flutter` (trabajo por PRs desde `feature/setup`).
 
 Según el documento de tesis (`../oPAEGo/docs/`), la app la usan el **conductor** y la
-**institución educativa**. Está conectada a la API de `oPAEGo` (JWT); los usuarios se crean en la
+**institución educativa**; además el **supervisor PAE** (rol nuevo, RF-39…42) registra qué
+estudiantes reciben el PAE cada día. Está conectada a la API de `oPAEGo` (JWT); los usuarios se crean en la
 web, la app solo inicia sesión. Contrato de la API: `/api/schema/` del backend.
 
 ## Comandos
@@ -72,17 +73,60 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
   `Location` falso (`usarLocation`).
 - Modelos: `models/envio.dart` envuelve el JSON del `EnvioSerializer` (estados
   `ASIGNADO|EN_TRANSITO|ENTREGADO|CON_NOVEDAD|CANCELADO`). Roles: `CONDUCTOR→driver`,
-  `INSTITUCION→rector`, `ADMINISTRADOR→admin` (`UserRoleX.fromBackend`); los getters de
+  `INSTITUCION→rector`, `ADMINISTRADOR→admin`, `SUPERVISOR→supervisor` (`UserRoleX.fromBackend`); los getters de
   `user_role.dart` solo muestran/ocultan UI, los permisos reales los aplica la API.
 - UI de envíos compartida en `lib/features/envios/envio_widgets.dart` (detalle, acciones por rol,
   novedad, confirmar recepción con código de 6 dígitos). Mapa, dashboard e informes leen de
   `EnvioRepository`/`SyncService`. Los usuarios se crean en la web (no hay pantalla de personal).
-- SQLite `paego.db` versión 6: `app_texts`, `envios_cache`, `operaciones`. La v6 borra las tablas
-  del modo local anterior a la API (`users`, `delivery_orders`, …).
+- SQLite `paego.db` versión 8: `app_texts`, `envios_cache`, `operaciones`, `estudiantes_cache`.
+  La v6 borra las tablas del modo local anterior a la API (`users`, …); la v8 borra
+  `plantillas_cache` y las operaciones `estudiante.autorizar|inscribir|revocar` de la cola.
+
+### Supervisor PAE (`lib/features/supervisor/`, `repositories/estudiantes_repository.dart`)
+- Entrega diaria por **código QR** único por estudiante (reemplazó al reconocimiento facial: no hay
+  biometría, plantillas, cifrado ni autorización del acudiente). El QR impreso del carné contiene
+  `PAEGO-E1:<codigo_qr>` (`prefijoQr`/`codigoDeQr` en `models/estudiante.dart`); `codigo_qr` es un
+  token aleatorio del servidor y para el rol institución puede venir null.
+- Pestañas propias en `HomeShell` (Cursos, Historial, Perfil); no maneja envíos. El rector ve la
+  pestaña de solo lectura "Estudiantes" (`estudiantes_hoy_screen.dart`, `GET /api/estudiantes/cursos/`, en línea).
+- Pantallas: `cursos_screen.dart` (avance del día por curso + "Escanear QR" de toda la institución),
+  `curso_screen.dart` (búsqueda, filtros, botón principal "Escanear QR"), `estudiante_screen.dart`
+  (ficha con el QR grande vía `qr_flutter`, estado de hoy y "Entrega manual" con motivo),
+  `escaner_qr_screen.dart` (`mobile_scanner` continuo → hoja de confirmación → registra y sigue;
+  avisa QR ajeno, no encontrado en la institución y "ya recibió hoy"; háptica),
+  `historial_screen.dart`, piezas comunes en `supervisor_comun.dart`. Las pruebas inyectan el
+  lector con `EscanerQrScreen(lector: …)` o `EscanerQrScreen.lectorDePrueba`.
+- Descarga la institución (`GET /api/estudiantes/?page_size=500`) a `estudiantes_cache`; el avance
+  por curso se calcula en el teléfono. `entrega_del_dia` de la caché solo cuenta si su fecha es hoy.
+  `porCodigoQr` busca en la caché (sin red).
+- Única acción: `estudiante.entregar` `{estudiante, metodo: QR|MANUAL, fecha, codigo | motivo}` →
+  cola de `SyncService` (sin red), aplicada al instante sobre la lista; el servidor rechaza con
+  `qr_invalido` o `duplicada`. Entregas antiguas con `metodo` `FACIAL` se muestran como
+  "Reconocimiento facial". Historial = operaciones `estudiante.*` de la cola. Al cerrar sesión se
+  borra `estudiantes_cache`.
 
 ### Mapa base (`lib/core/config/mapa_base.dart`)
-- `flutter_map` (código abierto) con teselas del servicio **Static Basemap Tiles de ArcGIS
-  Location Platform** si `ARCGIS_API_KEY` está en `.env`; sin clave, OpenStreetMap. Teselas de
+- **Mapa principal: Mapbox Standard en 3D** (`EstiloMapa.mapbox3d`, por defecto con token):
+  `lib/features/map/mapa_3d.dart` con el SDK oficial `mapbox_maps_flutter` (Android, iOS y web;
+  en web carga Mapbox GL JS solo). Edificios 3D, cámara inclinada 58°, luz `dawn/day/dusk/night`
+  según la hora (noche en tema oscuro). Marcadores y recorrido son fuentes GeoJSON + capas
+  (`SymbolLayer`/`LineLayer`, íconos dibujados en `Canvas`), no anotaciones: las anotaciones no
+  existen en web. Toque en un pin → `TapInteraction` → detalle del envío. El token se registra en
+  `MapaBase.configurar()` (main). En `web/index.html`, `.mapboxgl-map { isolation: isolate }`
+  evita que el logo/atribución de GL JS se vean encima de los paneles de Flutter. Si un build
+  web falla con "No default instance of MapboxMapsFlutterPlatform", borrar
+  `.dart_tool/flutter_build` (registrante de plugins web viejo en caché).
+- Los demás estilos usan `flutter_map` (código abierto) con teselas raster: **Mapbox** (Static Tiles
+  API de los estilos oficiales `mapbox/navigation-day-v1`, `streets-v12`, `outdoors-v12`,
+  `light-v11`, `navigation-night-v1`, `satellite-streets-v12`) si `MAPBOX_ACCESS_TOKEN` (token
+  público `pk.…`) está en `.env`. URL `https://api.mapbox.com/styles/v1/{usuario}/{estilo}/tiles/512/{z}/{x}/{y}{r}?access_token=`,
+  `tileSize: 512` + `zoomOffset: -1`, `{r}` = `@2x` en pantallas densas. En tema oscuro la
+  navegación pasa a `navigation-night` (no se invierten colores, como sí con OSM/ArcGIS).
+  Atribución obligatoria: logo "mapbox", "© Mapbox", "© OpenStreetMap" y "Mejorar este mapa"
+  (abren con `url_launcher`). Capa gratuita: 200 000 teselas/mes. Un estilo propio de Mapbox
+  Studio se agrega como otro valor de `EstiloMapa` con ruta `{usuario}/{id}`.
+- Alternativas: **ArcGIS Static Basemap Tiles** si `ARCGIS_API_KEY` está en `.env`; siempre
+  OpenStreetMap. ArcGIS: teselas de
   512 px → `tileSize: 512` + `zoomOffset: -1`; URL `.../v1/{familia}/{estilo}/static/tile/{z}/{y}/{x}?token=`
   (fila antes que columna). Capa gratuita: 2 M teselas/mes, sin tope automático → restringir la
   clave en location.arcgis.com. Atribución "Powered by Esri" obligatoria. El estilo elegido se
@@ -92,6 +136,10 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
   contra el backend local con `adb reverse tcp:8000 tcp:8000` y `PAEGO_API_URL=http://localhost:8000`.
 
 ### Otros
+- Colores: `PaeColors` (`lib/app/theme.dart`) copia la paleta GOV.CO del panel web
+  (`../oPAEGo/backend/static/css/tokens.css`): azul `#3366CC`/`#004884`, fondo `#F2F4F7`, estados
+  del envío iguales a la web, sin degradados (los nombres `*Gradient` quedan planos). Cambiar los
+  dos repos a la vez.
 - Textos bilingües (`lib/core/l10n/app_strings.dart`, clase `S`): `S.text('clave', 'es', 'en')`
   o `_t('es','en')` (clave = hash FNV del texto: cambiar el texto cambia la clave). Se sincronizan
   con la tabla Supabase `app_texts`.
@@ -101,7 +149,8 @@ dart run flutter_launcher_icons  # regenerar íconos desde assets/images/pae_log
 
 ## CI/CD (`.github/`)
 
-- Secreto opcional `ARCGIS_API_KEY` (mapas de ArcGIS en los builds de CI y release).
+- Secretos opcionales `MAPBOX_ACCESS_TOKEN` (mapa principal) y `ARCGIS_API_KEY` en los builds de
+  CI y release; sin ellos el APK usa OpenStreetMap.
 - `ci.yml`: `flutter analyze` (cualquier aviso, incluso info, bloquea), `dart format
   --set-exit-if-changed lib test` (bloquea: formatear antes de commitear), `flutter test --coverage`
   con un archivo generado que importa todo `lib/` (cobertura real, con pantallas) y mínimo

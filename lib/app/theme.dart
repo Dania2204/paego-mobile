@@ -2,71 +2,63 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-// ── Brand Palette ────────────────────────────────────────────────────────────
+// ── Paleta ───────────────────────────────────────────────────────────────────
+/// Colores de PAEGo: los mismos del panel web (`oPAEGo/backend/static/css/
+/// tokens.css`, sistema de diseño GOV.CO). Si cambia uno allá, cambiarlo aquí.
 class PaeColors {
-  // Primary: deep teal-blue
-  static const primary = Color(0xFF0A7B6B);
-  static const primaryDark = Color(0xFF065A4E);
-  static const primaryLight = Color(0xFF14A88F);
+  // Marca GOV.CO
+  static const primary = Color(0xFF3366CC); // --govco-azul
+  static const primaryDark = Color(0xFF004884); // --govco-azul-oscuro
+  static const primaryLight = Color(0xFF6B93E0); // azul legible en tema oscuro
+  static const primarySoft = Color(0xFFE8EFFB); // --govco-azul-claro
 
-  // Accent: vivid cyan-green
-  static const accent = Color(0xFF00D4AA);
-  static const accentLight = Color(0xFF4DFFDA);
+  // Acento: el mismo azul (la web no usa un segundo color de marca).
+  static const accent = Color(0xFF3366CC);
+  static const accentLight = Color(0xFF6B93E0);
 
-  // Secondary: ocean blue
-  static const secondary = Color(0xFF1565C0);
-  static const secondaryLight = Color(0xFF42A5F5);
+  static const secondary = Color(0xFF004884);
+  static const secondaryLight = Color(0xFF3366CC);
 
-  // Gradient stops
-  static const gradStart = Color(0xFF0D6E5F);
-  static const gradMid = Color(0xFF0B8C7A);
-  static const gradEnd = Color(0xFF059B8A);
+  // Encabezados: azul institucional plano (la web no usa degradados).
+  static const gradStart = Color(0xFF004884);
+  static const gradMid = Color(0xFF004884);
+  static const gradEnd = Color(0xFF004884);
 
-  // Backgrounds
-  static const bgLight = Color(0xFFF0FAF8);
-  static const bgDark = Color(0xFF071A17);
-  static const surfaceLight = Color(0xFFFFFFFF);
-  static const surfaceDark = Color(0xFF0E2922);
+  // Fondos y superficies
+  static const bgLight = Color(0xFFF2F4F7); // --fondo
+  static const bgDark = Color(0xFF0B1626);
+  static const surfaceLight = Color(0xFFFFFFFF); // --superficie
+  static const surfaceDark = Color(0xFF12223A);
   static const cardLight = Color(0xFFFFFFFF);
-  static const cardDark = Color(0xFF132E28);
+  static const cardDark = Color(0xFF172A45);
 
-  // Status
-  static const success = Color(0xFF00C48C);
-  static const warning = Color(0xFFFFB300);
-  static const error = Color(0xFFE53935);
-  static const info = Color(0xFF039BE5);
+  // Retroalimentación
+  static const success = Color(0xFF05785A); // --ok
+  static const warning = Color(0xFFB25E00);
+  static const error = Color(0xFFA80521); // --error
+  static const info = Color(0xFF3366CC);
+  static const focus = Color(0xFFFFAB00); // --foco
 
-  // Delivery status
-  static const statusPending = Color(0xFFFFB300);
-  static const statusAssigned = Color(0xFF039BE5);
-  static const statusEnRoute = Color(0xFF00C48C);
-  static const statusDelivered = Color(0xFF43A047);
+  // Estados del envío (iguales a la web, RF-18)
+  static const statusPending = Color(0xFF8A5300); // --aviso
+  static const statusAssigned = Color(0xFF3366CC); // --e-asignado
+  static const statusEnRoute = Color(0xFFB25E00); // --e-transito
+  static const statusDelivered = Color(0xFF05785A); // --e-entregado
+  static const statusNovedad = Color(0xFFC2410C); // --e-novedad
+  static const statusCancelado = Color(0xFF6B7280); // --e-cancelado
 
-  // Neutrals
-  static const textPrimary = Color(0xFF0D1F1C);
-  static const textSecondary = Color(0xFF4A7068);
+  // Tinta y neutros
+  static const textPrimary = Color(0xFF1B1B1B); // --tinta
+  static const textSecondary = Color(0xFF5F6672); // --tinta-3
   static const textLight = Color(0xFFFFFFFF);
-  static const divider = Color(0xFFE0F0EC);
-  static const inactive = Color(0xFFB2CFCA);
+  static const divider = Color(0xFFE1E5EB); // --borde
+  static const inactive = Color(0xFFB8BEC8); // --borde-fuerte
 
-  // Gradient constructors
-  static const primaryGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [gradStart, gradMid, gradEnd],
-  );
-
-  static const heroGradient = LinearGradient(
-    begin: Alignment.topCenter,
-    end: Alignment.bottomCenter,
-    colors: [Color(0xFF0A5C50), Color(0xFF0D8C78), Color(0xFF00D4AA)],
-    stops: [0.0, 0.6, 1.0],
-  );
-
+  // "Degradados" planos: se conservan los nombres para no tocar las pantallas.
+  static const primaryGradient = LinearGradient(colors: [gradStart, gradEnd]);
+  static const heroGradient = LinearGradient(colors: [gradStart, gradEnd]);
   static const cardGradient = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFF0D7A6A), Color(0xFF0A9B87)],
+    colors: [primaryDark, primaryDark],
   );
 }
 
@@ -183,8 +175,10 @@ ThemeData buildLightTheme() {
     colorScheme: scheme,
     textTheme: PaeTypography.textTheme,
     scaffoldBackgroundColor: PaeColors.bgLight,
+    // Mismo azul que GradientHeader: un AppBar normal (supervisor) tenía texto
+    // blanco sobre el fondo claro de la pantalla.
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.transparent,
+      backgroundColor: PaeColors.primaryDark,
       foregroundColor: PaeColors.textLight,
       elevation: 0,
       centerTitle: false,
@@ -288,7 +282,6 @@ ThemeData buildLightTheme() {
       backgroundColor: PaeColors.primary,
       foregroundColor: Colors.white,
       elevation: 4,
-      shape: CircleBorder(),
     ),
     dividerTheme: const DividerThemeData(
       color: PaeColors.divider,
@@ -327,7 +320,7 @@ ThemeData buildDarkTheme() {
     ),
     scaffoldBackgroundColor: PaeColors.bgDark,
     appBarTheme: const AppBarTheme(
-      backgroundColor: Colors.transparent,
+      backgroundColor: PaeColors.primaryDark,
       foregroundColor: Colors.white,
       elevation: 0,
       centerTitle: false,

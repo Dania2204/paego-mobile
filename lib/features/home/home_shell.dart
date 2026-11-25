@@ -5,11 +5,15 @@ import '../../core/router/app_router.dart';
 import '../../data/repositories/auth_service.dart';
 import '../../data/sync/sync_service.dart';
 import '../../data/models/user_model.dart';
+import '../../data/models/user_role.dart';
 import '../dashboard/dashboard_screen.dart';
 import '../map/map_screen.dart';
 import '../nutrition/nutrition_screen.dart';
 import '../reports/reports_screen.dart';
 import '../profile/profile_screen.dart';
+import '../supervisor/cursos_screen.dart';
+import '../supervisor/estudiantes_hoy_screen.dart';
+import '../supervisor/historial_screen.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({
@@ -99,8 +103,40 @@ class _HomeShellState extends State<HomeShell> {
     }
   }
 
+  Widget _perfil(AppUser u) => ProfileScreen(
+    user: u,
+    onToggleTheme: widget.onToggleTheme,
+    themeMode: widget.themeMode,
+    onToggleLanguage: () {
+      widget.onToggleLanguage();
+      // force home shell rebuild too
+      setState(() {});
+    },
+    locale: widget.locale,
+  );
+
   List<_TabDef> _buildTabs() {
     final u = widget.user;
+    // Supervisor PAE: solo la entrega por estudiante (no maneja envíos).
+    if (u.role.canRegisterStudents) {
+      return [
+        _TabDef(
+          icon: Icons.groups_rounded,
+          label: S.text('nav.cursos', 'Cursos', 'Classes'),
+          screen: const SupervisorCursosScreen(),
+        ),
+        _TabDef(
+          icon: Icons.history_rounded,
+          label: S.text('nav.historial', 'Historial', 'History'),
+          screen: const HistorialSupervisorScreen(),
+        ),
+        _TabDef(
+          icon: Icons.person_rounded,
+          label: S.navProfile,
+          screen: _perfil(u),
+        ),
+      ];
+    }
     return [
       _TabDef(
         icon: Icons.dashboard_rounded,
@@ -122,20 +158,17 @@ class _HomeShellState extends State<HomeShell> {
         label: S.navNutrition,
         screen: NutritionScreen(user: u),
       ),
+      // Institución: consulta quién recibió el PAE hoy (solo lectura).
+      if (u.role.canViewStudents)
+        _TabDef(
+          icon: Icons.groups_rounded,
+          label: S.text('nav.estudiantes', 'Estudiantes', 'Students'),
+          screen: const EstudiantesHoyScreen(),
+        ),
       _TabDef(
         icon: Icons.person_rounded,
         label: S.navProfile,
-        screen: ProfileScreen(
-          user: u,
-          onToggleTheme: widget.onToggleTheme,
-          themeMode: widget.themeMode,
-          onToggleLanguage: () {
-            widget.onToggleLanguage();
-            // force home shell rebuild too
-            setState(() {});
-          },
-          locale: widget.locale,
-        ),
+        screen: _perfil(u),
       ),
     ];
   }
@@ -238,13 +271,14 @@ class BarraSincronizacion extends StatelessWidget {
           );
         } else if (!e.enLinea) {
           texto = e.pendientes > 0
-              ? S
-                    .text(
-                      'sync.offline_pendientes',
-                      'Sin conexión · {n} cambios guardados en el teléfono',
-                      'Offline · {n} changes saved on the phone',
-                    )
-                    .replaceAll('{n}', '${e.pendientes}')
+              ? S.cantidad(
+                  e.pendientes,
+                  'sync.offline_pendientes',
+                  esUno: 'Sin conexión · 1 cambio guardado en el teléfono',
+                  es: 'Sin conexión · {n} cambios guardados en el teléfono',
+                  enUno: 'Offline · 1 change saved on the phone',
+                  en: 'Offline · {n} changes saved on the phone',
+                )
               : S.text(
                   'sync.offline',
                   'Sin conexión · los cambios se guardan en el teléfono',
@@ -253,21 +287,23 @@ class BarraSincronizacion extends StatelessWidget {
           color = PaeColors.warning;
           icono = Icons.wifi_off_rounded;
         } else if (e.pendientes > 0) {
-          texto = S
-              .text(
-                'sync.enviando',
-                'Enviando {n} cambios a la plataforma…',
-                'Sending {n} changes to the platform…',
-              )
-              .replaceAll('{n}', '${e.pendientes}');
+          texto = S.cantidad(
+            e.pendientes,
+            'sync.enviando',
+            esUno: 'Enviando 1 cambio a la plataforma…',
+            es: 'Enviando {n} cambios a la plataforma…',
+            enUno: 'Sending 1 change to the platform…',
+            en: 'Sending {n} changes to the platform…',
+          );
         } else if (e.rechazadas > 0) {
-          texto = S
-              .text(
-                'sync.rechazadas',
-                '{n} cambios fueron rechazados por el servidor (ver Informes)',
-                '{n} changes were rejected by the server (see Reports)',
-              )
-              .replaceAll('{n}', '${e.rechazadas}');
+          texto = S.cantidad(
+            e.rechazadas,
+            'sync.rechazadas',
+            esUno: '1 cambio fue rechazado por el servidor (ver Informes)',
+            es: '{n} cambios fueron rechazados por el servidor (ver Informes)',
+            enUno: '1 change was rejected by the server (see Reports)',
+            en: '{n} changes were rejected by the server (see Reports)',
+          );
           color = PaeColors.error;
           icono = Icons.error_outline_rounded;
         }

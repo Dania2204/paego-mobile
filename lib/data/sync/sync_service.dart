@@ -110,7 +110,10 @@ class SyncService {
 
   final estado = ValueNotifier<EstadoSync>(const EstadoSync());
 
-  /// Avisa cuando el servidor aplicó operaciones (para recargar los envíos).
+  /// Avisa cuando el servidor respondió operaciones, aplicadas o rechazadas,
+  /// para que los repositorios recarguen el estado real: si solo se avisaran
+  /// las aplicadas, el cambio optimista de una rechazada (p. ej. "Entregado"
+  /// con un código equivocado) quedaría en el teléfono.
   final _aplicadas = StreamController<List<Operacion>>.broadcast();
   Stream<List<Operacion>> get onAplicadas => _aplicadas.stream;
 
@@ -200,14 +203,17 @@ class SyncService {
   }
 
   /// Historial de operaciones del usuario (sin los puntos de ubicación).
-  Future<List<Operacion>> historial({int limite = 100}) async {
+  /// Con [prefijo] solo las de ese tipo (p. ej. `estudiante.`).
+  Future<List<Operacion>> historial({int limite = 100, String? prefijo}) async {
     final usuarioId = _usuarioId;
     if (usuarioId == null) return const [];
     final db = await _db;
     final filas = await db.query(
       'operaciones',
-      where: 'usuario_id = ? AND tipo != ?',
-      whereArgs: [usuarioId, 'envio.ubicacion'],
+      where: prefijo == null
+          ? 'usuario_id = ? AND tipo != ?'
+          : 'usuario_id = ? AND tipo LIKE ?',
+      whereArgs: [usuarioId, prefijo == null ? 'envio.ubicacion' : '$prefijo%'],
       orderBy: 'ocurrido_en DESC',
       limit: limite,
     );
@@ -268,8 +274,8 @@ class SyncService {
             ],
           },
         );
-        final aplicadas = await _guardarResultados(lote, respuesta);
-        if (aplicadas.isNotEmpty) _aplicadas.add(aplicadas);
+        final respondidas = await _guardarResultados(lote, respuesta);
+        if (respondidas.isNotEmpty) _aplicadas.add(respondidas);
         if (lote.length < _maxPorLote) break;
       }
       await _limpiarUbicacionesViejas(usuarioId);
@@ -325,7 +331,7 @@ class SyncService {
     };
     final db = await _db;
     final ahora = DateTime.now().toUtc().toIso8601String();
-    final aplicadas = <Operacion>[];
+    final respondidas = <Operacion>[];
     final batch = db.batch();
     for (final op in lote) {
       final r = porUuid[op.uuid];
@@ -344,10 +350,10 @@ class SyncService {
         where: 'uuid = ?',
         whereArgs: [op.uuid],
       );
-      if (!rechazada) aplicadas.add(op);
+      respondidas.add(op);
     }
     await batch.commit(noResult: true);
-    return aplicadas;
+    return respondidas;
   }
 
   static Map<String, dynamic> _sinFotos(Map<String, dynamic> datos) {

@@ -2,6 +2,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET"/>
+    <!-- Supervisor PAE: escanear el código QR del estudiante (no se toman fotos) -->
+    <uses-permission android:name="android.permission.CAMERA"/>
     <!-- Rastreo del recorrido con la pantalla bloqueada: el plugin location usa
          un servicio en primer plano de tipo "location" con notificación. -->
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION"/>
@@ -10,7 +12,7 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
-        android:label="opaego"
+        android:label="PAEGo"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
@@ -50,6 +52,11 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- url_launcher: enlaces de la atribución del mapa (Mapbox, OpenStreetMap). -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="https"/>
         </intent>
     </queries>
 </manifest>

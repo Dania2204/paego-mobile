@@ -63,10 +63,12 @@ abstract class S {
       () => roleAdmin,
       () => roleRector,
       () => roleDriver,
+      () => roleSupervisor,
       () => roleDescSuperAdmin,
       () => roleDescAdmin,
       () => roleDescRector,
       () => roleDescDriver,
+      () => roleDescSupervisor,
       () => dashboardWelcome,
       () => dashboardActiveDeliveries,
       () => dashboardPendingOrders,
@@ -190,6 +192,18 @@ abstract class S {
     return _dbTexts[key]?[_locale] ?? (isSpanish ? es : en);
   }
 
+  /// Texto con una cantidad `{n}` en singular o plural ("1 cambio guardado",
+  /// "3 cambios guardados"). Cada forma tiene su clave (`key.uno` y `key`).
+  static String cantidad(
+    int n,
+    String key, {
+    required String esUno,
+    required String es,
+    required String enUno,
+    required String en,
+  }) => (n == 1 ? text('$key.uno', esUno, enUno) : text(key, es, en))
+      .replaceAll('{n}', '$n');
+
   static String _t(String es, String en) => text(_keyFor(es, en), es, en);
 
   static String _keyFor(String es, String en) {
@@ -292,6 +306,7 @@ abstract class S {
   static String get roleAdmin => _t('Admin', 'Admin');
   static String get roleRector => _t('Institución educativa', 'School');
   static String get roleDriver => _t('Conductor', 'Driver');
+  static String get roleSupervisor => _t('Supervisor PAE', 'Meal supervisor');
 
   static String get roleDescSuperAdmin => _t(
     'Acceso total — ver y gestionar todo.',
@@ -308,6 +323,11 @@ abstract class S {
   static String get roleDescDriver => _t(
     'Registra salida, recorrido y llegada de tus envíos.',
     'Record departure, route and arrival of your deliveries.',
+  );
+
+  static String get roleDescSupervisor => _t(
+    'Registra qué estudiantes recibieron el PAE cada día.',
+    'Records which students received the school meal each day.',
   );
 
   // ── Home / Dashboard ──────────────────────────────────────────────────────

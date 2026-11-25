@@ -28,6 +28,7 @@ void main() {
   late List<Map<String, dynamic>> lotes;
   late List<Uri> consultas;
   var hayRed = true;
+  var rechazar = false;
 
   setUpAll(() async {
     sqfliteFfiInit();
@@ -47,6 +48,7 @@ void main() {
     lotes = [];
     consultas = [];
     hayRed = true;
+    rechazar = false;
     ApiClient.usarCliente(
       MockClient((r) async {
         if (!hayRed) throw http.ClientException('sin red');
@@ -63,8 +65,10 @@ void main() {
                 {
                   'uuid_cliente': op['uuid_cliente'],
                   'tipo': op['tipo'],
-                  'resultado': 'ok',
-                  'respuesta': {'id': 1},
+                  'resultado': rechazar ? 'rechazado' : 'ok',
+                  'respuesta': rechazar
+                      ? {'codigo_verificacion': 'No coincide.'}
+                      : {'id': 1},
                 },
             ],
           });
@@ -124,6 +128,33 @@ void main() {
     hayRed = true;
     final otraVez = await repo.refrescar();
     expect(otraVez.single.estado, EstadoEnvio.enTransito);
+  });
+
+  test('si el servidor rechaza la operación vuelve al estado real', () async {
+    await repo.refrescar();
+    enServidor = [envioJson(estado: 'EN_TRANSITO')];
+    await repo.refrescar();
+    rechazar = true;
+    hayRed = false;
+    await repo.confirmarRecepcion(
+      repo.porId(7)!,
+      recibidos: const {},
+      recibidoPorNombre: 'Prueba',
+      codigoVerificacion: '111111',
+    );
+    // Cambio optimista: se ve entregado mientras se sincroniza.
+    expect(repo.porId(7)!.estado, EstadoEnvio.entregado);
+    hayRed = true;
+    await SyncService.instance.sincronizar();
+    for (
+      var i = 0;
+      i < 100 && repo.porId(7)!.estado != EstadoEnvio.enTransito;
+      i++
+    ) {
+      await Future<void>.delayed(const Duration(milliseconds: 10));
+    }
+    expect(repo.porId(7)!.estado, EstadoEnvio.enTransito);
+    expect(SyncService.instance.estado.value.rechazadas, 1);
   });
 
   test('al aplicarse el lote recarga el estado real del servidor', () async {
